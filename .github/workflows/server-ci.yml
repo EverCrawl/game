@@ -1,3 +1,6 @@
+
+name: Server CI
+
 on:
   push:
     paths:
@@ -12,7 +15,6 @@ on:
       - server/Cargo.lock
       - server/src/**
 
-name: Server CI
 
 jobs:
   rust-check:

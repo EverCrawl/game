@@ -1,3 +1,6 @@
+
+name: Client CI
+
 on:
   push:
     paths:
@@ -19,8 +22,6 @@ on:
       - client/package-lock.json
       - client/snowpack.config.js
       - client/tsconfig.json
-
-name: Client CI
 
 jobs:
   # runs typescript build + test

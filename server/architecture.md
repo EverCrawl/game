@@ -18,9 +18,9 @@ Once every update, the synchronization system serializes state based on interest
 
 This server uses space-based interest management, where the world is divided into zones, and only entities in the same zone can ever see each other.
 
-Some other interest management schemes are described [in this paper](https://www.cs.mcgill.ca/~jboula2/thesis.pdf).
-
 The reason for dividing the world is to save bandwidth and processing power. Bandwidth is saved because instead of each packet being `N^2` in size, it is only `N*M`, where `N` is the number of players, and `M` is the number of entities visible to it. `M` will almost always be far lower than `N`.
+
+Some other interest management schemes are described [in this paper](https://www.cs.mcgill.ca/~jboula2/thesis.pdf).
 
 # Implementation details
 
@@ -32,60 +32,17 @@ There are two schedulers:
 * Game system scheduler
 * I/O scheduler
 
-The game systems all access a joint event queue. The event queue is double-buffered, one is read-only, the other is write-only. The buffers are swapped at the end of every update. This is done so that systems don't receive an event in the middle of processing. 
-
 The network system contains the incoming half of the client input MPSC queue, which it processes and turns into events. The outgoing half of the client input MPSC queue is inside each client connection. The client connection receives packets from its client, turning them into inputs, which it sends through the queue.
-
-```
-  client connections
-           |
-         input
-           |
-           v
-        (network system)
-              |
-           network
-            event
-              |
-              v
-   -----event queue-----
-     ^    |
-     |  event
-   event  |
-     |    v
-     systems
-       .
-       .
-       .
-    scheduler
-```
 
 ### Database access
 
 The I/O scheduler is re-used for asynchronous database access. Each system may send a query to the outgoing query queue, along with a callback. The callback will be called with the result once the query completes (either successfully or not). The callback is called from a different thread, so it must be thread-safe.
 
-```
-    scheduler
-        .
-        .
-        .
-    connection pool
-           ^
-           |
-           v
-  database query queue
-        ^     |
-        |  callback
-      query   |
-        |     v
-        systems
-```
-
 ### Game logic
 
-The game uses a parallel ECS architecture. In ECS, systems are the base unit of logic, and components are the base unit of state. Components store arbitrary data. Systems access and transform components in arbitrary ways. This decoupling of state and logic creates a potentially easier to maintain structure. There are also clear performance gains, due to better cache locality (by storing components in contiguous arrays), or the potential for paralellization (due to knowing ahead of time which systems need to access which components).
+The game uses a parallel ECS architecture. In ECS, systems are the base unit of logic, and components are the base unit of state. Components store arbitrary data. Systems access and transform components in arbitrary ways. This decoupling of state and logic creates a potentially easier to maintain structure. There are also clear performance gains, due to better cache locality (by storing components in contiguous arrays), or the potential for paralellization (due to knowing ahead of time which systems need to access which components), as well as being able to split component arrays into chunks and process them on multiple threads.
 
-A *very* simple example:
+A simple example:
 ```rust
 // components
 #[derive(Clone, Copy, Default)]
@@ -113,5 +70,3 @@ fn main() {
   }
 }
 ```
-
-The potential for parallelization comes from being able to split the arrays into parts and process them on separate threads.
