@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        /* Visit https://aka.ms/tsconfig.json to read more about this file */
+        "target": "es2020",
+        "module": "es2020",
+        "moduleResolution": "node",
+        "lib": [
+            "ESNext",
+            "DOM"
+        ],
+        "strict": true,
+        "alwaysStrict": true,
+        "sourceMap": true,
+        "jsx": "react", 
+        "jsxFactory": "h",
+        "baseUrl": "./src",
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": ["./src"]
+}

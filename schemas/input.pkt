@@ -1,0 +1,15 @@
+
+Action: enum {
+    MoveLeft,
+    MoveRight,
+    MoveUp,
+    MoveDown,
+    Jump,
+    LetGo
+}
+
+Input: struct {
+    action: Action
+}
+
+export Input

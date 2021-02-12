@@ -1,0 +1,25 @@
+[package]
+name = "server"
+version = "0.1.0"
+authors = ["jprochazk <honza.spacir@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1.0.1", features = ["full"] }
+tungstenite = "0.12.0"
+tokio-tungstenite = "0.13.0"
+futures-util = "0.3.10"
+log = "0.4.13"
+pretty_env_logger = "0.4.0"
+deadqueue = "0.2.0"
+ctrlc = { version = "3.1.7", features = ["termination"] }
+anyhow = "1.0.38"
+thiserror = "1.0.23"
+sqlx = { version = "0.4.2", features = ["postgres", "runtime-tokio-rustls", "macros"] }
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.5"
+tokio-compat-02 = "0.2"
+packet = { package = "packet-rs", git = "https://github.com/EverCrawl/packet-rs.git", branch = "master" }
+quick-xml = { version = "0.20.0", features = ["serialize"] }

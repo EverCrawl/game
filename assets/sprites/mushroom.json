@@ -1,0 +1,93 @@
+{ "frames": {
+   "mushroom Idle 0": {
+    "frame": { "x": 0, "y": 0, "w": 16, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 32 },
+    "sourceSize": { "w": 16, "h": 32 },
+    "duration": 250
+   },
+   "mushroom Idle 1": {
+    "frame": { "x": 0, "y": 32, "w": 16, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 32 },
+    "sourceSize": { "w": 16, "h": 32 },
+    "duration": 250
+   },
+   "mushroom Walk 0": {
+    "frame": { "x": 16, "y": 0, "w": 16, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 32 },
+    "sourceSize": { "w": 16, "h": 32 },
+    "duration": 150
+   },
+   "mushroom Walk 1": {
+    "frame": { "x": 16, "y": 32, "w": 16, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 32 },
+    "sourceSize": { "w": 16, "h": 32 },
+    "duration": 150
+   },
+   "mushroom Walk 2": {
+    "frame": { "x": 16, "y": 64, "w": 16, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 32 },
+    "sourceSize": { "w": 16, "h": 32 },
+    "duration": 150
+   },
+   "mushroom Walk 3": {
+    "frame": { "x": 16, "y": 96, "w": 16, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 32 },
+    "sourceSize": { "w": 16, "h": 32 },
+    "duration": 150
+   },
+   "mushroom Jump 0": {
+    "frame": { "x": 32, "y": 0, "w": 16, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 32 },
+    "sourceSize": { "w": 16, "h": 32 },
+    "duration": 100
+   },
+   "mushroom Fall 0": {
+    "frame": { "x": 48, "y": 0, "w": 16, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 32 },
+    "sourceSize": { "w": 16, "h": 32 },
+    "duration": 100
+   },
+   "mushroom Crouch 0": {
+    "frame": { "x": 64, "y": 0, "w": 16, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 32 },
+    "sourceSize": { "w": 16, "h": 32 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.21-dev",
+  "image": "mushroom.png",
+  "format": "RGBA8888",
+  "size": { "w": 80, "h": 128 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "Idle", "from": 0, "to": 1, "direction": "forward" },
+   { "name": "Walk", "from": 2, "to": 5, "direction": "forward" },
+   { "name": "Jump", "from": 6, "to": 6, "direction": "forward" },
+   { "name": "Fall", "from": 7, "to": 7, "direction": "forward" },
+   { "name": "Crouch", "from": 8, "to": 8, "direction": "forward" }
+  ],
+  "layers": [
+   { "name": "mushroom", "opacity": 255, "blendMode": "normal" }
+  ]
+ }
+}

@@ -1,0 +1,88 @@
+on:
+  push:
+    paths:
+      - .github/workflows/**
+      - server/Cargo.toml
+      - server/Cargo.lock
+      - server/src/**
+  pull_request:
+    paths:
+      - .github/workflows/**
+      - server/Cargo.toml
+      - server/Cargo.lock
+      - server/src/**
+
+name: Server CI
+
+jobs:
+  rust-check:
+    name: Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+  rust-test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+  rust-fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  rust-clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - run: rustup component add clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings

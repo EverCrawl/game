@@ -1,0 +1,17 @@
+
+Position: struct {
+    x: float,
+    y: float
+}
+
+Entity: struct {
+    uid: uint32,
+    pos?: Position
+}
+
+State: struct {
+    id: uint32,
+    entities: Entity[]
+}
+
+export State
