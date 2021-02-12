@@ -4,25 +4,25 @@ name: Server CI
 on:
   push:
     paths:
-      - .github/workflows/**
+      - .github/workflows/server-ci.yml
       - server/Cargo.toml
       - server/Cargo.lock
       - server/src/**
   pull_request:
     paths:
-      - .github/workflows/**
+      - .github/workflows/server-ci.yml
       - server/Cargo.toml
       - server/Cargo.lock
       - server/src/**
 
+defaults:
+  run:
+    working-directory: server
 
 jobs:
   rust-check:
     name: Check
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -37,9 +37,6 @@ jobs:
   rust-test:
     name: Test Suite
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -54,9 +51,6 @@ jobs:
   rust-fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -73,9 +67,6 @@ jobs:
   rust-clippy:
     name: Clippy
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1

@@ -4,7 +4,7 @@ name: Client CI
 on:
   push:
     paths:
-      - .github/workflows/**
+      - .github/workflows/client-ci.yml
       - client/public
       - client/src
       - client/jest.config.js
@@ -14,7 +14,7 @@ on:
       - client/tsconfig.json
   pull_request:
     paths:
-      - .github/workflows/**
+      - .github/workflows/client-ci.yml
       - client/public
       - client/src
       - client/jest.config.js
@@ -23,14 +23,15 @@ on:
       - client/snowpack.config.js
       - client/tsconfig.json
 
+defaults:
+  run:
+    working-directory: client
+
 jobs:
   # runs typescript build + test
   ts:
     name: TypeScript 
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./client
     strategy:
       matrix:
         node_version:
