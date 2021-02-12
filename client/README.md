@@ -2,7 +2,8 @@
 
 ### Prerequisites
 
-* [Node](https://nodejs.org/en/) 14+
+* [Node](https://nodejs.org/en/) 15+
+  * Should also work with earlier Node versions, but it's not tested
 * WebGL2 compatible browser
   * You can check if your browser supports it [here](https://webglreport.com/?v=2)
 

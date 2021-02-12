@@ -15,13 +15,9 @@ on:
       - server/Cargo.lock
       - server/src/**
 
-defaults:
-  run:
-    working-directory: server
-
 jobs:
-  rust-check:
-    name: Check
+  rust:
+    name: Rust
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,52 +26,29 @@ jobs:
           profile: minimal
           toolchain: nightly
           override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
 
-  rust-test:
-    name: Test Suite
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - name: Run type checking
+        run: cargo check --manifest-path=server/Cargo.toml
 
-  rust-fmt:
-    name: Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - run: rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+      - name: Run tests
+        run: cargo test --manifest-path=server/Cargo.toml
 
-  rust-clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - run: rustup component add clippy
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
+      # The following two steps are optional, because sometimes 
+      # the nightly toolchain doesn't have all components ready, 
+      # in which case we don't want CI to fail.
+      
+      - name: Get rustfmt
+        id: getfmt
+        run: rustup component add rustfmt
+        continue-on-error: true
+      - name: Check formatting
+        if: steps.getfmt.outcome == 'success'
+        run: cargo fmt --manifest-path=server/Cargo.toml --all -- --check
+
+      - name: Get clippy
+        id: getclippy
+        run: rustup component add clippy
+        continue-on-error: true
+      - name: Lint
+        if: steps.getclippy.outcome == 'success'
+        run: cargo clippy --manifest-path=server/Cargo.toml -- -D warnings
