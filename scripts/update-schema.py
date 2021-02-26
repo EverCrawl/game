@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import os, sys, subprocess, shutil, glob, errno, os.path
+import os, sys, subprocess, glob, errno, os.path
+from pathlib import Path
 
 def call(cmd: str, env = None, silent = False):
     return bool(subprocess.call(
@@ -32,44 +33,86 @@ if ec != 0:
 else:
     print("...packetc found")
 
-print("Processing client schemas")
-os.chdir("client")
-
+print("Processing schemas")
 print("...deleting old schemas")
-if os.path.isdir("src/schemas"): shutil.rmtree("src/schemas")
+for f in Path("common/net/schema").rglob("*.ts"):
+    os.remove(f)
 
 print("...compiling schemas")
-call("packetc ts ../schemas src/schemas")
+call("packetc ts common/net/schema common/net/schema")
 
 # all the compiled schemas in src/schemas need to be re-exported
 # this globs the generated filenames, and generates exports for them
 # and outputs it to a "index.ts" file in src/schemas
-print("...writing index file")
-index = ""
-for file in glob.glob("src/schemas/*.ts"):
-    filename = os.path.splitext(os.path.basename(file))[0]
+
+def files(dir: str, ext: str):
+    out = []
+    for (_,_,files) in os.walk(dir):
+        for file in files:
+            if os.path.splitext(os.path.basename(file))[1] == ext:
+                out.append(file)
+        break
+    return out
+
+def dirs(dir: str):
+    out = []
+    for (_,dirs,_) in os.walk(dir):
+        out.extend(dirs)
+        break
+    return out
+
+def format_export(full_path: str):
+    filename = os.path.splitext(os.path.basename(full_path))[0]
     export = filename.title()
-    index += f"export * as {export} from \"./{filename}\";\n"
-with safe_open_w("src/schemas/index.ts") as f: f.write(index)
-os.chdir("..")
-print("Done.")
+    return (export, filename)
 
-print("Processing server schemas")
-os.chdir("server")
+def format_prefix(dir: str):
+    ''' action/test/asdf
+    '''
+    out = ""
+    for part in dir.split(os.pathsep):
+        if part != "":
+            out += f'{part.title()}.'
+    return out
 
-print("...deleting old schemas")
-if os.path.isdir("src/schemas"): shutil.rmtree("src/schemas")
+def local_export(dir: str, sdir: str, ctx: dict, root: str):
+    index = ""
+    # recursively export each sub-directory
+    for subdir in dirs(dir):
+        index += f'import * as {subdir.title()} from "./{subdir}";\n'
+        index += f'export * as {subdir.title()} from "./{subdir}";\n'
+        local_export(
+            os.path.join(dir, subdir), 
+            os.path.join(sdir, subdir), 
+            ctx, 
+            root)
+    # then export each .ts file + save its name in ctx
+    exports = [format_export(file) for file in files(dir, ".ts")]
+    for (export, filename) in exports:
+        index += f'export {{ {export} }} from "./{filename}";\n' 
+        prefix = format_prefix(sdir)
+        ctx["names"].append((f'{prefix}Id.{export}', f'{export}'))
+    # write ids
+    index += "export const enum Id {\n"
+    for (export, _) in exports: 
+        ctx["id"] += 1
+        index += f'    {export} = {ctx["id"] - 1},\n'
+    index += "}\n"
+    # if we're in ROOT, then also export max ID and names
+    if dir == root:
+        index += f'export const ID_MAX = {ctx["id"]};\n'
+        # write packet names
+        index += "export const Name = Object.freeze({\n"
+        for (id, name) in ctx["names"]:
+            index += f'    [{id}]: "{name}",\n'
+        index += "});\n"
+        index += "export type Name = typeof Name;\n"
+    with safe_open_w(dir + "/index.ts") as file:
+        file.write(index)
 
-print("...compiling schemas")
-call("packetc rust ../schemas src/schemas")
+def write_exports(dir: str):
+    local_export(dir, "", { "id": 0, "names": [] }, dir)
 
-print("...writing module file")
-# same as above, but the output is a "mod.rs" file
-index = ""
-for file in glob.glob("src/schemas/*.rs"):
-    filename = os.path.splitext(os.path.basename(file))[0]
-    index += f"pub mod {filename};\n"
-with safe_open_w("src/schemas/mod.rs") as f: f.write(index)
-
-os.chdir("..")
+print("...writing index files")
+write_exports("common/net/schema")
 print("Done.")

@@ -1,0 +1,12 @@
+
+Position: struct {
+    x: float,
+    y: float
+}
+
+Create: struct {
+    id: uint32,
+    position: Position
+}
+
+export Create

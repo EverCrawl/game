@@ -1,0 +1,51 @@
+
+name: Server CI
+
+on:
+  push:
+    paths:
+      - 'client'
+      - 'server'
+      - 'common'
+      - '!**/README.md'
+      - '!**/LICENSE'
+  pull_request:
+    paths:
+      - 'client'
+      - 'server'
+      - 'common'
+      - '!**/README.md'
+      - '!**/LICENSE'
+
+jobs:
+  # runs typescript build + test
+  ts:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version:
+          - 15
+    steps:
+      # get code + setup node toolchain
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # yarn cache files are stored in `~/.yarn` on Linux/macOS
+          path: .yarn
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Get Node toolchain
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node_version }}
+      # install, build, test
+      - run: yarn install --cache-folder .yarn
+      - run: yarn test

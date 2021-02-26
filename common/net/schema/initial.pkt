@@ -1,0 +1,17 @@
+
+Position: struct {
+    x: float,
+    y: float
+}
+
+Entity: struct {
+    id: uint32,
+    position: Position
+}
+
+Initial: struct {
+    player: Entity,
+    entities: Entity[]
+}
+
+export Initial

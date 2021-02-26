@@ -1,0 +1,31 @@
+{
+    "compilerOptions": {
+        "target": "es2020",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "lib": [
+            "ESNext",
+            "DOM"
+        ],
+        "strict": true,
+        "alwaysStrict": true,
+        "sourceMap": true,
+        "jsx": "react", 
+        "jsxFactory": "h",
+        "outDir": "dist",
+        "baseUrl": ".",
+        "paths": {
+            "client": ["./client"],
+            "common": ["./common"],
+            "server": ["./server"]
+        },
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": ["./client", "./common", "./server"],
+    "ts-node": {
+        "files": true
+    }
+}

@@ -1,0 +1,8 @@
+# This is used for client-side position updates
+
+Position: struct {
+    x: float,
+    y: float
+}
+
+export Position
