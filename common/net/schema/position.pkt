@@ -1,6 +1,9 @@
 # This is used for client-side position updates
 
+# TODO: solve duplication - module system (?)
+
 Position: struct {
+    cstate: uint8,
     x: float,
     y: float
 }

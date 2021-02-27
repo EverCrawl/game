@@ -1,10 +1,18 @@
 import { Interpolated, v2, Vector2 } from "common/math";
+import { Schema } from "./net";
 
 export class Value<T> {
     constructor(public value: T) { }
 }
 
-export class LerpPos extends Interpolated<Vector2> {
+export const enum CollisionState {
+    Air,
+    Ground,
+    Ladder
+}
+
+export class NetPos extends Interpolated<Vector2> {
+    cstate: CollisionState = CollisionState.Air;
     constructor(initial: Vector2 = v2()) {
         super(initial, v2.lerp);
     }
@@ -21,12 +29,6 @@ export class Collider extends Value<AABB> {
         return new Collider(new AABB(v2.clone(this.value.center), v2.clone(this.value.half)))
     }
 } */
-
-type CollisionState =
-    | "air"
-    | "ground"
-    | "ladder"
-    ;
 
 export class RigidBody {
     position: Interpolated<Vector2>;
@@ -56,6 +58,6 @@ export class RigidBody {
         this.speed = speed;
         this.jumpSpeed = jumpSpeed;
         this.ladderSpeed = ladderSpeed;
-        this.cstate = "ground";
+        this.cstate = CollisionState.Ground;
     }
 }

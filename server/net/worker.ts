@@ -19,9 +19,9 @@ export class NetWorker extends FileWorker {
     close(id: number) {
         this.postMessage([CommandKind.Close, id]);
     }
-    batch(ids: number[], data: ArrayBuffer) {
-        const idbuf = new Uint32Array(ids);
-        this.postMessage([CommandKind.Batch, idbuf, data], [idbuf.buffer, data]);
+    broadcast(data: ArrayBuffer, exclude: number[] = []) {
+        const excludeBuf = new Uint32Array(exclude);
+        this.postMessage([CommandKind.Broadcast, excludeBuf, data], [excludeBuf.buffer, data]);
     }
 }
 
@@ -102,11 +102,17 @@ function workerMain(parent: MessagePort, port: number, maxSockets: number) {
                     socket.send(cmd[2], true);
                 }
             } break;
-            case CommandKind.Batch: {
-                const ids = cmd[1];
+            case CommandKind.Broadcast: {
+                const exclude = cmd[1];
                 const data = cmd[2];
-                for (let i = 0; i < ids.length; ++i) {
-                    sockets[ids[i]]?.send(data, true);
+
+                const slist = Object.values(sockets);
+                next: for (let i = 0; i < slist.length; ++i) {
+                    const socket = slist[i];
+                    for (let j = 0; j < exclude.length; ++j) {
+                        if (socket.id === exclude[j]) continue next;
+                    }
+                    socket.send(data, true);
                 }
             } break;
             case CommandKind.Shutdown: {

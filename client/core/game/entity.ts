@@ -1,7 +1,7 @@
 import { World, Tag, Entity } from "uecs";
 import { Sprite, Spritesheet } from "client/core/gfx";
 import { v2, Vector2 } from "common/math";
-import { LerpPos, RigidBody } from "common/component";
+import { NetPos, RigidBody } from "common/component";
 
 export namespace Player {
     export function self(
@@ -25,6 +25,6 @@ export namespace Player {
         return world.insert(id,
             Tag.for("Player"),
             new Sprite(new Spritesheet(sprite)),
-            new LerpPos(position));
+            new NetPos(position));
     }
 }

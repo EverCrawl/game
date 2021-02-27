@@ -28,6 +28,7 @@ export class Sprite {
     direction: Direction;
     lastDirection: Direction;
     moving: boolean;
+    jumping: boolean;
 
     constructor(
         spritesheet: Spritesheet,
@@ -37,6 +38,7 @@ export class Sprite {
         this.direction = Direction.Right;
         this.lastDirection = Direction.Right;
         this.moving = false;
+        this.jumping = false;
 
         this.frameIndex = 0;
         this.lastAnimationStep = Date.now();

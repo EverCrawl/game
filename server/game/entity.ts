@@ -1,10 +1,11 @@
-import { LerpPos } from "common/component";
-import { Socket } from "server/net";
+import { NetPos } from "common/component";
 import { Vector2 } from "common/math";
 import { World, Entity } from "uecs";
+import { Session } from "./session";
 
 export class Player {
-    static create(world: World, socket: Socket, position?: Vector2): Entity {
-        return world.create(socket, new LerpPos(position));
+    static create(world: World, session: Session, position?: Vector2): Entity {
+        session.entity = world.create(session, new NetPos(position))
+        return session.entity;
     }
 }

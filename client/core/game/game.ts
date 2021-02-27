@@ -6,7 +6,7 @@ import * as System from "./system";
 import * as Entity from "./entity";
 import * as Net from "./net";
 import { AABB, v2, v3, v4 } from "common/math";
-import { LerpPos, RigidBody } from "common/component";
+import { NetPos, RigidBody } from "common/component";
 import {
     Level,
     TILESET_ID_MASK, TILE_ID_MASK,
@@ -146,7 +146,7 @@ export class Game {
             }
 
             // draw all sprites except for entity
-            this.world.view(Sprite, LerpPos).each((entity, sprite, position) => {
+            this.world.view(Sprite, NetPos).each((entity, sprite, position) => {
                 if (entity === this.player) return;
 
                 const interpolatedPosition = position.get(frameTime);
@@ -156,80 +156,9 @@ export class Game {
                 ), 0, v2(0.5, 0.5));
             });
 
-            // debug drawing tiles
-            const pbody = this.world.get(this.player, RigidBody)!;
-
-            const tileBox = new AABB(v2(), TILE_SCALE);
-
-            let minTX = Math.floor((pbody.position.current[0] - TILESIZE_HALF) / TILESIZE);
-            let maxTX = Math.floor((pbody.position.current[0] + TILESIZE_HALF) / TILESIZE);
-            let minTY = Math.floor((pbody.position.current[1] - TILESIZE_HALF) / TILESIZE);
-            let maxTY = Math.floor((pbody.position.current[1] + TILESIZE_HALF) / TILESIZE);
-            for (let ty = minTY; ty <= maxTY; ++ty) {
-                for (let tx = minTX; tx <= maxTX; ++tx) {
-                    // CollisionKind.Full means solid tile
-                    switch (this.level.collisionKind(tx, ty)) {
-                        case CollisionKind.Full: {
-                            drawBorderAABB(this.renderer, v2(
-                                worldOffset[0] + tx * TILESIZE + TILESIZE_HALF,
-                                worldOffset[1] + ty * TILESIZE + TILESIZE_HALF
-                            ), tileBox, v4(1.0, 0.5, 1.0, 1.0));
-                            break;
-                        }
-                        case CollisionKind.SlopeLeft: {
-                            drawSlope(this.renderer,
-                                v2(worldOffset[0] + tx * TILESIZE, worldOffset[1] + ty * TILESIZE),
-                                CollisionKind.SlopeLeft,
-                                v4(1.0, 0.5, 1.0, 1.0));
-                            break;
-                        }
-                        case CollisionKind.SlopeRight: {
-                            drawSlope(this.renderer,
-                                v2(worldOffset[0] + tx * TILESIZE, worldOffset[1] + ty * TILESIZE),
-                                CollisionKind.SlopeRight,
-                                v4(1.0, 0.5, 1.0, 1.0));
-                            break;
-                        }
-                        case CollisionKind.SlopeLeftBottom: {
-                            drawSlope(this.renderer,
-                                v2(worldOffset[0] + tx * TILESIZE, worldOffset[1] + ty * TILESIZE),
-                                CollisionKind.SlopeLeftBottom,
-                                v4(1.0, 0.5, 1.0, 1.0));
-                            break;
-                        }
-                        case CollisionKind.SlopeRightBottom: {
-                            drawSlope(this.renderer,
-                                v2(worldOffset[0] + tx * TILESIZE, worldOffset[1] + ty * TILESIZE),
-                                CollisionKind.SlopeRightBottom,
-                                v4(1.0, 0.5, 1.0, 1.0));
-                            break;
-                        }
-                        case CollisionKind.SlopeLeftTop: {
-                            drawSlope(this.renderer,
-                                v2(worldOffset[0] + tx * TILESIZE, worldOffset[1] + ty * TILESIZE),
-                                CollisionKind.SlopeLeftTop,
-                                v4(1.0, 0.5, 1.0, 1.0));
-                            break;
-                        }
-                        case CollisionKind.SlopeRightTop: {
-                            drawSlope(this.renderer,
-                                v2(worldOffset[0] + tx * TILESIZE, worldOffset[1] + ty * TILESIZE),
-                                CollisionKind.SlopeRightTop,
-                                v4(1.0, 0.5, 1.0, 1.0));
-                            break;
-                        }
-                    }
-                }
-            }
-
             // draw player
             this.world.get(this.player, Sprite)!
                 .draw(renderer, 0, v2(0, 8), 0, v2(0.5, 0.5));
-            // draw player AABB
-            drawBorderAABB(renderer,
-                v2(),
-                new AABB(v2(), v2(8, 8)),
-                v4(1.0, 0.5, 1.0, 1.0));
 
             renderer.flush();
         }

@@ -26,10 +26,10 @@ describe("Message", function () {
     });
 
     it("deserialize", function () {
-        let msg = Message.parse(u16([0, 0]));
+        let msg = Message.parse(u16([0, 0]).buffer);
         expect(msg.id).toEqual(0);
         expect(msg.size).toEqual(0);
-        expect(msg.payload).toEqual(new Uint8Array);
+        expect(msg.payload).toEqual(new ArrayBuffer(0));
     });
 
     it("verify no header", function () {

@@ -9,9 +9,9 @@ const HEADER_SIZE: number = /* u16 */ 2 + /* u16 */ 2;
 
 export class Message {
     private header_: Header;
-    private payload_: Uint8Array;
+    private payload_: ArrayBuffer;
 
-    private constructor(id: number, payload: Uint8Array) {
+    private constructor(id: number, payload: ArrayBuffer) {
         this.header_ = { id, size: payload.byteLength };
         this.payload_ = payload;
     }
@@ -24,12 +24,12 @@ export class Message {
         return this.header_.size;
     }
 
-    get payload(): Uint8Array {
+    get payload(): ArrayBuffer {
         return this.payload_;
     }
 
-    static parse(data: Uint8Array): Message {
-        let reader = new Reader(data.buffer);
+    static parse(data: ArrayBuffer): Message {
+        let reader = new Reader(data);
         let header = {
             id: reader.read_uint16(),
             size: reader.read_uint16(),
@@ -43,9 +43,9 @@ export class Message {
             return false;
         }
 
-        let view = new Uint16Array(data);
-        let id = view[0];
-        let size = view[1];
+        let view = new DataView(data);
+        let id = view.getUint16(0, true);
+        let size = view.getUint16(2, true);
 
         if (id >= Schema.ID_MAX) {
             return false;

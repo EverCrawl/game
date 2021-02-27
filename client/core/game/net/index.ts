@@ -1,3 +1,4 @@
+export * from "./handle";
 
 function connect(address: string, options: {
     timeout?: number,

@@ -1,4 +1,5 @@
 import { Message } from "common/net/message";
+import { Constructor } from "common/utils";
 import { NetWorker } from "./worker";
 
 export class Socket {
@@ -33,24 +34,35 @@ export class Socket {
         this.worker.close(this.id);
         this.state = "closed";
     }
+
+    /**
+     * User data
+     */
+    [key: string]: any;
 }
 
-export class SocketManager {
+export class SocketManager<TSocket extends Socket = Socket> {
     private worker: NetWorker | null = null;
-    onopen: ((socket: Socket) => void);
-    onclose: ((id: number, code: CloseCode, msg: string) => void);
-    onmessage: ((id: number, msg: Message) => void);
+    onopen: ((socket: TSocket) => void);
+    onclose: ((socket: TSocket, code: CloseCode, msg: string) => void);
+    onmessage: ((socket: TSocket, msg: Message) => void);
     onerror: ((error: ErrorEvent) => void);
+    sockets: Map<number, TSocket> = new Map;
 
     constructor(
         public readonly port: number,
-        public readonly maxSockets: number
+        public readonly maxSockets: number,
+        private socketType = Socket as Constructor<TSocket>
     ) {
         const NOP = function () { };
         this.onopen = NOP;
         this.onclose = NOP;
         this.onmessage = NOP;
-        this.onerror = NOP;
+        this.onerror = err => console.error(err);
+    }
+
+    get size() {
+        return this.sockets.size;
     }
 
     async start(): Promise<void> {
@@ -81,15 +93,15 @@ export class SocketManager {
     }
 
     /**
-     * Send `data` to every id in `ids`.
+     * Send `data` to every socket expect for those in `exclude`.
      * 
      * This is faster than sending the data to one socket at a time.
      */
-    batchSend(ids: number[], data: ArrayBuffer) {
+    broadcast(data: ArrayBuffer, exclude?: number[]) {
         if (this.worker === null || !this.worker.running) {
             return;
         }
-        this.worker.batch(ids, data);
+        this.worker.broadcast(data, exclude);
     }
 
     private onSocketEvent = (event: Event) => {
@@ -98,13 +110,20 @@ export class SocketManager {
                 this.onerror(new ErrorEvent("error", { message: event[1] }));
             } break;
             case EventKind.SocketOpen: {
-                this.onopen(new Socket(event[1], this.worker));
+                const socket = new this.socketType(event[1], this.worker);
+                this.sockets.set(socket.id, socket);
+                this.onopen(socket);
             } break;
             case EventKind.SocketClose: {
-                this.onclose(event[1], event[2], Buffer.from(event[3]).toString("utf-8"));
+                this.onclose(
+                    this.sockets.get(event[1])!,
+                    event[2],
+                    Buffer.from(event[3]).toString("utf-8"));
             } break;
             case EventKind.SocketData: {
-                this.onmessage(event[1], Message.parse(new Uint8Array(event[2])));
+                this.onmessage(
+                    this.sockets.get(event[1])!,
+                    Message.parse(event[2]));
             } break;
             default: {
                 this.worker!.postMessage([CommandKind.Shutdown]);
@@ -203,16 +222,16 @@ export type Event =
 export const enum CommandKind {
     Send = 0,
     Close = 1,
-    Batch = 2,
+    Broadcast = 2,
     Shutdown = 3,
 }
 export type SendCommand = [kind: CommandKind.Send, id: number, data: ArrayBuffer];
 export type CloseCommand = [kind: CommandKind.Close, id: number];
-export type BatchCommand = [kind: CommandKind.Batch, ids: Uint32Array, data: ArrayBuffer];
+export type BroadcastCommand = [kind: CommandKind.Broadcast, ids: Uint32Array, data: ArrayBuffer];
 export type ShutdownCommand = [kind: CommandKind.Shutdown];
 export type Command =
     | SendCommand
     | CloseCommand
-    | BatchCommand
+    | BroadcastCommand
     | ShutdownCommand
     ;

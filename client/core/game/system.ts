@@ -1,65 +1,24 @@
 import { World, Entity, Null } from "uecs";
-import { LerpPos, RigidBody } from 'common/component';
+import { CollisionState, NetPos, RigidBody } from 'common/component';
 import { Sprite, Direction } from "client/core/gfx";
 import { CollisionKind, Level, TILESIZE, TILESIZE_HALF, TILE_SCALE } from "client/core/map";
-import { AABB, v2 } from 'common/math';
+import { AABB, v2, Vector2 } from 'common/math';
 import * as Input from "./input";
 import * as Net from "./net";
-import { Player } from "./entity";
 import { Game } from "./game";
 import { Message, Schema } from "common/net";
 
-function handle(game: Game, message: Message) {
-    switch (message.id) {
-        case Schema.Id.Initial: {
-            const packet = Schema.Initial.read(message.payload.buffer)!;
-            console.log("Initial", packet.player.id, packet.player.position);
-            game.player = Player.self(game.world,
-                packet.player.id,
-                "assets/sprites/mushroom.json",
-                v2(packet.player.position.x, packet.player.position.y));
-
-            for (let i = 0; i < packet.entities.length; ++i) {
-                const entity = packet.entities[i];
-                Player.insert(game.world,
-                    entity.id,
-                    "assets/sprites/mushroom.json",
-                    v2(entity.position.x, entity.position.y));
-            }
-        } break;
-        case Schema.Id.Create: {
-            const packet = Schema.Create.read(message.payload.buffer)!;
-            console.log("Create", packet.id, packet.position);
-            Player.insert(game.world,
-                packet.id,
-                "assets/sprites/mushroom.json",
-                v2(packet.position.x, packet.position.y));
-        } break;
-        case Schema.Id.Delete: {
-            const packet = Schema.Delete.read(message.payload.buffer)!;
-            console.log("Delete", packet.id);
-            game.world.destroy(packet.id);
-        } break;
-        case Schema.Action.Id.Move: {
-            const packet = Schema.Action.Move.read(message.payload.buffer)!;
-            console.log("Move", packet.entities.length);
-            for (let i = 0, len = packet.entities.length; i < len; ++i) {
-                const entity = packet.entities[i];
-                if (entity.id === game.player) continue;
-                game.world.get(entity.id, LerpPos)?.update([entity.x, entity.y]);
-            }
-        }
-    }
-}
-
 export function network(game: Game, socket: Net.Socket) {
     if (socket.state === Net.Socket.OPEN) {
-        game.world.view(LerpPos).each((_, p) => p.update(v2.clone(p.current)));
+        game.world.view(NetPos).each((_, p) => p.update(v2.clone(p.current)));
 
         if (!socket.empty) {
             let packet;
             while (packet = socket.read()) {
-                handle(game, Message.parse(new Uint8Array(packet)));
+                const message = Message.parse(packet);
+                const type = Net.HandlerTable[message.id as keyof Net.HandlerTable][0];
+                const handleFn = Net.HandlerTable[message.id as keyof Net.HandlerTable][1];
+                handleFn(game, type.read(message.payload) as any);
             }
         }
 
@@ -69,9 +28,9 @@ export function network(game: Game, socket: Net.Socket) {
             if (body.position.current[0] !== body.position.previous[0] ||
                 body.position.current[1] !== body.position.previous[1]) {
                 const packet = new Schema.Position(
+                    body.cstate,
                     body.position.current[0],
                     body.position.current[1]);
-                console.log("sent:", "Move", body.position.current);
                 socket.send(Message.build(Schema.Id.Position, packet.write()));
             }
         }
@@ -147,7 +106,7 @@ export function physics(world: World, player: Entity, level?: Level) {
     // check for things that modify x-velocity
     // ATM we can only move left/right if we're not on a ladder
     let direction = 0;
-    if (body.cstate !== "ladder" &&
+    if (body.cstate !== CollisionState.Ladder &&
         // if both 'left' and 'right' keys are pressed,
         // don't move in either direction
         !(Input.isPressed("KeyA") && Input.isPressed("KeyD"))) {
@@ -165,7 +124,7 @@ export function physics(world: World, player: Entity, level?: Level) {
         let direction = Math.sign(body.velocity[0]);
 
         let decelaration = body.friction;
-        if (body.cstate === "air") decelaration = body.drag;
+        if (body.cstate === CollisionState.Air) decelaration = body.drag;
 
         let nextVelocity = body.velocity[0] - (decelaration * direction);
         if (nextVelocity * direction < 0) {
@@ -179,22 +138,22 @@ export function physics(world: World, player: Entity, level?: Level) {
 
     // check for things that modify y-velocity
     switch (body.cstate) {
-        case "air": {
+        case CollisionState.Air: {
             // if we're in the air, that's gravity
             body.velocity[1] += GRAVITY;
             body.velocity[1] = Math.min(body.velocity[1], TERMINAL_VELOCITY);
             break;
         }
-        case "ground": {
+        case CollisionState.Ground: {
             // if we're on the ground, that's jumping
             body.velocity[1] = 0;
             if (Input.isPressed("Space")) {
-                body.cstate = "air";
+                body.cstate = CollisionState.Air;
                 body.velocity[1] = -body.jumpSpeed;
             }
             break;
         }
-        case "ladder": {
+        case CollisionState.Ladder: {
             // TODO: decide if you should be able to jump off a ladder
             //      - maybe just the top/bottom tiles?
             body.velocity[1] = 0;
@@ -218,12 +177,12 @@ export function physics(world: World, player: Entity, level?: Level) {
     const centerTY = Math.floor(entityBox.center[1] / TILESIZE);
 
     // climbing ladders
-    if (body.cstate !== "ladder") {
+    if (body.cstate !== CollisionState.Ladder) {
         if (Input.isPressed("KeyW")) {
             // if there's a ladder tile on the entity
             if (level.collisionKind(centerTX, centerTY) === CollisionKind.Ladder) {
                 // grab onto it
-                body.cstate = "ladder";
+                body.cstate = CollisionState.Ladder;
                 // snap the entity to the ladder on the x-axis
                 entityBox.center[0] = centerTX * TILESIZE + TILESIZE_HALF;
                 body.velocity[0] = 0;
@@ -232,7 +191,7 @@ export function physics(world: World, player: Entity, level?: Level) {
         else if (Input.isPressed("KeyS")) {
             // the ladder tile may also be below the entity
             if (level.collisionKind(centerTX, centerTY + 1) === CollisionKind.Ladder) {
-                body.cstate = "ladder";
+                body.cstate = CollisionState.Ladder;
                 entityBox.center[0] = centerTX * TILESIZE + TILESIZE_HALF;
                 // give the player a little downward boost
                 entityBox.center[1] += 1;
@@ -241,12 +200,12 @@ export function physics(world: World, player: Entity, level?: Level) {
         }
     } else {
         if (Input.isPressed("KeyX")) {
-            body.cstate = "air";
+            body.cstate = CollisionState.Air;
         }
     }
 
     switch (body.cstate) {
-        case "air": {
+        case CollisionState.Air: {
             // calculate 2D tile range we need to check for collisions
             let minTX = Math.floor((entityBox.center[0] - TILESIZE_HALF) / TILESIZE);
             let maxTX = Math.floor((entityBox.center[0] + TILESIZE_HALF - 1) / TILESIZE);
@@ -368,13 +327,13 @@ export function physics(world: World, player: Entity, level?: Level) {
                     Math.floor(entityBox.center[0] / TILESIZE),
                     Math.floor(entityBox.center[1] / TILESIZE) + 1
                 ) !== CollisionKind.None) {
-                body.cstate = "ground";
+                body.cstate = CollisionState.Ground;
                 body.velocity[1] = 0;
             }
 
             break;
         }
-        case "ground": {
+        case CollisionState.Ground: {
             // are we on a slope?
             const bottomTY = Math.floor((entityBox.center[1] + TILESIZE_HALF - 1) / TILESIZE);
             let bottomCK = level.collisionKind(centerTX, bottomTY);
@@ -443,14 +402,14 @@ export function physics(world: World, player: Entity, level?: Level) {
                 // check tiles under the two bottom corners of the entity
                 if (level.collisionKind(groundTileXLeft, groundTileY) === CollisionKind.None &&
                     level.collisionKind(groundTileXRight, groundTileY) === CollisionKind.None) {
-                    body.cstate = "air";
+                    body.cstate = CollisionState.Air;
                 }
                 // if the "down" key is pressed, entity wants to
                 // jump down from the platform
                 if (Input.isPressed("KeyS") &&
                     level.collisionKind(groundTileXLeft, groundTileY) === CollisionKind.Platform &&
                     level.collisionKind(groundTileXRight, groundTileY) === CollisionKind.Platform) {
-                    body.cstate = "air";
+                    body.cstate = CollisionState.Air;
                     // give the entity a little boost
                     // if this wasn't here, you could spam the down arrow key 
                     // and never actually leave the platform
@@ -459,7 +418,7 @@ export function physics(world: World, player: Entity, level?: Level) {
             }
             break;
         }
-        case "ladder": {
+        case CollisionState.Ladder: {
             // while climbing a ladder, we're only moving vertically
             // and we only check for collisions on the top and bottom
 
@@ -488,7 +447,7 @@ export function physics(world: World, player: Entity, level?: Level) {
                     // then snap entity to the 'air' tile Y 
                     entityBox.center[1] = movedBottomTY * TILESIZE + TILESIZE_HALF;
                     // and set collision state to 'ground'
-                    body.cstate = "ground";
+                    body.cstate = CollisionState.Ground;
                 }
             }
             // moving down
@@ -505,14 +464,14 @@ export function physics(world: World, player: Entity, level?: Level) {
                         entityBox.center[1] += result[1];
                         // if we hit something below while on a ladder
                         // exit the climbing state
-                        body.cstate = "ground";
+                        body.cstate = CollisionState.Ground;
                     }
                 } else if (
                     // if both the tile we're on and the one below
                     // are empty tiles, fall off the ladder
                     belowTileCK === CollisionKind.None &&
                     level.collisionKind(tx, ty) === CollisionKind.None) {
-                    body.cstate = "air";
+                    body.cstate = CollisionState.Air;
                 }
             }
             break;
@@ -532,68 +491,49 @@ export function physics(world: World, player: Entity, level?: Level) {
     body.position.update(entityBox.center);
 }
 
+function animate(sprite: Sprite, dpos: Vector2, cstate: CollisionState) {
+    let direction = sprite.direction;
+    if (dpos[0] < 0)
+        direction = Direction.Left,
+            sprite.moving = true;
+    else if (dpos[0] > 0)
+        direction = Direction.Right,
+            sprite.moving = true;
+    else
+        sprite.moving = false;
+
+    sprite.direction = direction;
+    sprite.jumping = dpos[1] !== 0;
+
+    if (sprite.moving && (sprite.lastDirection != sprite.direction)) {
+        sprite.lastDirection = sprite.direction;
+    }
+
+    let animation = "Idle";
+    if (cstate !== CollisionState.Ground) {
+        animation = "Jump"
+    } else {
+        if (sprite.moving) {
+            animation = "Walk";
+        }
+    }
+
+    sprite.animation = animation;
+}
+
 export function animation(world: World, player: Entity) {
     // animate entities
-    world.view(Sprite, LerpPos).each((_, sprite, pos) => {
-        let direction = sprite.direction;
-        const velocity = [
-            pos.current[0] - pos.previous[0],
-            pos.current[1] - pos.previous[1]
-        ];
-        if (velocity[0] < 0) direction = Direction.Left;
-        else if (velocity[0] > 0) direction = Direction.Right;
-
-        sprite.direction = direction;
-        sprite.moving = velocity[0] !== 0;
-        const jumping = velocity[1] !== 0;
-
-        if (sprite.moving && (sprite.lastDirection != sprite.direction)) {
-            sprite.lastDirection = sprite.direction;
-        }
-
-        // TODO: send cstate
-        let animation;
-        if (jumping) {
-            animation = "Jump";
-        } else {
-            if (sprite.moving) {
-                animation = "Walk";
-            } else {
-                animation = "Idle";
-            }
-        }
-
-        sprite.animation = animation;
+    world.view(Sprite, NetPos).each((_, sprite, pos) => {
+        const p0 = pos.previous;
+        const p1 = pos.current;
+        const dpos = v2(p1[0] - p0[0], p1[1] - p0[1]);
+        animate(sprite, dpos, pos.cstate);
     });
 
+    // animate player
     if (player !== Null) {
-        // animate player
         const sprite = world.get(player, Sprite)!;
         const body = world.get(player, RigidBody)!;
-
-        let direction = sprite.direction;
-        if (body.velocity[0] < 0) direction = Direction.Left;
-        else if (body.velocity[0] > 0) direction = Direction.Right;
-
-        sprite.direction = direction;
-        sprite.moving = body.velocity[0] !== 0 || body.velocity[1] !== 0;
-
-        if (sprite.moving && (sprite.lastDirection != sprite.direction)) {
-            sprite.lastDirection = sprite.direction;
-        }
-
-        let animation;
-        if (body.cstate !== "ground") {
-            animation = "Jump";
-        }
-        else {
-            if (sprite.moving) {
-                animation = "Walk";
-            } else {
-                animation = "Idle";
-            }
-        }
-
-        sprite.animation = animation;
+        animate(sprite, body.velocity, body.cstate);
     }
 }
