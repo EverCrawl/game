@@ -11,8 +11,11 @@ export const enum CollisionState {
     Ladder
 }
 
+const STARTING_LEVEL = "test";
+
 export class NetPos extends Interpolated<Vector2> {
-    cstate: CollisionState = CollisionState.Air;
+    level: string = STARTING_LEVEL;
+    cstate: CollisionState = CollisionState.Ground;
     constructor(initial: Vector2 = v2()) {
         super(initial, v2.lerp);
     }
@@ -33,13 +36,14 @@ export class Collider extends Value<AABB> {
 export class RigidBody {
     position: Interpolated<Vector2>;
     velocity: Vector2;
-    acceleration: number;
-    friction: number;
-    drag: number;
-    speed: number;
-    jumpSpeed: number;
-    ladderSpeed: number;
     cstate: CollisionState;
+
+    readonly acceleration: number;
+    readonly friction: number;
+    readonly drag: number;
+    readonly speed: number;
+    readonly jumpSpeed: number;
+    readonly ladderSpeed: number;
 
     constructor(
         pos: Vector2,
@@ -50,14 +54,23 @@ export class RigidBody {
         jumpSpeed: number = 9,
         ladderSpeed: number = 3
     ) {
+        // variables
         this.position = new Interpolated<Vector2>(pos, v2.lerp);
         this.velocity = v2();
+        this.cstate = CollisionState.Air;
+
+        // constants
         this.acceleration = acceleration;
         this.friction = friction;
         this.drag = drag;
         this.speed = speed;
         this.jumpSpeed = jumpSpeed;
         this.ladderSpeed = ladderSpeed;
-        this.cstate = CollisionState.Ground;
+    }
+
+    reset(position: Vector2) {
+        this.position.reset(position);
+        this.velocity = v2();
+        this.cstate = CollisionState.Air;
     }
 }

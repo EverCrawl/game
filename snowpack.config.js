@@ -10,7 +10,7 @@ module.exports = {
     common: { url: "/dist" }
   },
   plugins: [
-    "snowpack-plugin-tiled",
+    "tiled-loader",
     "@snowpack/plugin-dotenv",
     "@snowpack/plugin-typescript"
   ],

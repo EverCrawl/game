@@ -3,18 +3,17 @@ import { Null, World } from "uecs";
 import * as Runtime from "common/runtime";
 import { InitGL, Viewport, Camera, Renderer, Sprite } from "client/core/gfx";
 import * as System from "./system";
-import * as Entity from "./entity";
 import * as Net from "./net";
-import { AABB, v2, v3, v4 } from "common/math";
+import * as Input from "./input";
+import { v2 } from "common/math";
 import { NetPos, RigidBody } from "common/component";
-import {
-    Level,
-    TILESET_ID_MASK, TILE_ID_MASK,
-    TILESIZE, TILESIZE_HALF,
-    TILE_SCALE,
-    CollisionKind
-} from "client/core/map";
-import { drawBorderAABB, drawSlope } from "client/core/debug";
+import { Level } from "client/core/map";
+
+// @ts-ignore
+if (DEBUG) {
+    // @ts-ignore
+    window.Input = Input;
+}
 
 /*
 // TODO: client/server/assets/schemas monorepo!!
@@ -44,6 +43,10 @@ TODO: (client) prediction + reconciliation
 TODO: playtest deployment
 */
 
+export type ReadyGame = Game & {
+    level: Level
+}
+
 export class Game {
     overlay: OverlayContainer;
     canvas: HTMLCanvasElement;
@@ -72,19 +75,21 @@ export class Game {
         this.renderer = new Renderer();
         this.world = new World();
         this.socket = new Net.Socket("127.0.0.1:8888", "test", 1000);
-
-        // TEMP
-        /* this.tilemap = new TileMap("assets/maps/template.tmx"); */
-        /* this.world = new World("assets/lmaps/test.ldtk"); */
-        this.level = new Level("assets/maps/test.amt");
-
-        // TEMP
         this.player = Null;
 
         if (DEBUG) {
             // @ts-ignore |SAFETY| available globally for debugging purposes in devtools console
             window.Game = this;
         }
+    }
+
+    ready(): this is ReadyGame {
+        return (
+            this.player !== Null &&
+            this.level !== undefined &&
+            this.level.ready &&
+            this.socket.state === Net.Socket.OPEN
+        );
     }
 
     run() {
@@ -96,9 +101,11 @@ export class Game {
     }
 
     update() {
-        System.network(this, this.socket);
-        System.physics(this.world, this.player, this.level);
-        System.animation(this.world, this.player);
+        Input.update();
+        System.use(this);
+        System.network(this);
+        System.physics(this);
+        System.animation(this);
     }
 
     draw(
@@ -106,7 +113,7 @@ export class Game {
         camera: Camera,
         frameTime: number
     ) {
-        if (this.player === Null || this.level == null || !this.level.ready) {
+        if (this.player === Null || !this.level || !this.level.ready) {
             // render loading screen
         } else {
             renderer.camera = camera;
@@ -117,35 +124,9 @@ export class Game {
                 this.world.get(this.player, RigidBody)!
                     .position.get(frameTime));
 
-            renderer.background = this.level.data.background;
-            // render level tile layers
-            let renderLayerId = -10;
-            for (let layerIndex = 0; layerIndex < this.level.data.tile.length; ++layerIndex) {
-                for (let y = 0; y < this.level.data.height; ++y) {
-                    for (let x = 0; x < this.level.data.width; ++x) {
-                        let tile = this.level.data.tile[layerIndex][x + y * this.level.data.width];
-                        if (tile === 0) continue;
-                        // have to remove '1' to get the actual ID
-                        // because all IDs are offset by '1' due to '0' having a special value
-                        tile -= 1;
-                        const tilesetIndex = tile & TILESET_ID_MASK;
-                        const tileset = this.level.data.tilesets[tilesetIndex];
-                        const tileId = tile & TILE_ID_MASK;
-                        // tiles are rendered from the center
-                        // so we add TILESIZE_HALF to offset it 
-                        // to the top-left corner
-                        const tilePos = v2(
-                            TILESIZE_HALF + x * TILESIZE + worldOffset[0],
-                            TILESIZE_HALF + y * TILESIZE + worldOffset[1]
-                        );
-                        renderer.command.tile(
-                            tileset.texture, renderLayerId++, tileId,
-                            tilePos, 0, TILE_SCALE);
-                    }
-                }
-            }
+            this.level.render(renderer, worldOffset);
 
-            // draw all sprites except for entity
+            // draw all sprites except for player, who is drawn last
             this.world.view(Sprite, NetPos).each((entity, sprite, position) => {
                 if (entity === this.player) return;
 
@@ -156,7 +137,7 @@ export class Game {
                 ), 0, v2(0.5, 0.5));
             });
 
-            // draw player
+            // draw player - he's drawn on top of every other entity in the sprite layer
             this.world.get(this.player, Sprite)!
                 .draw(renderer, 0, v2(0, 8), 0, v2(0.5, 0.5));
 

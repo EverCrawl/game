@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.4" tiledversion="1.4.2" name="basic-grass" tilewidth="16" tileheight="16" tilecount="40" columns="8">
- <image source="../images/grass.png" width="128" height="80"/>
+<tileset version="1.4" tiledversion="1.4.2" name="basic-grass" tilewidth="16" tileheight="16" tilecount="90" columns="10">
+ <image source="../images/grass.png" width="160" height="144"/>
  <tile id="0">
   <properties>
    <property name="collision" value="Full"/>
@@ -39,16 +39,6 @@
  <tile id="7">
   <properties>
    <property name="collision" value="SlopeRight"/>
-  </properties>
- </tile>
- <tile id="8">
-  <properties>
-   <property name="collision" value="Full"/>
-  </properties>
- </tile>
- <tile id="9">
-  <properties>
-   <property name="collision" value="Full"/>
   </properties>
  </tile>
  <tile id="10">
@@ -91,59 +81,44 @@
    <property name="collision" value="Full"/>
   </properties>
  </tile>
- <tile id="18">
-  <properties>
-   <property name="collision" value="Full"/>
-  </properties>
- </tile>
- <tile id="19">
-  <properties>
-   <property name="collision" value="Full"/>
-  </properties>
- </tile>
  <tile id="20">
   <properties>
-   <property name="collision" value="SlopeLeftTop"/>
+   <property name="collision" value="Full"/>
   </properties>
  </tile>
  <tile id="21">
   <properties>
-   <property name="collision" value="SlopeLeftBottom"/>
+   <property name="collision" value="Full"/>
   </properties>
  </tile>
  <tile id="22">
   <properties>
-   <property name="collision" value="SlopeRightBottom"/>
+   <property name="collision" value="Full"/>
   </properties>
  </tile>
  <tile id="23">
   <properties>
-   <property name="collision" value="SlopeRightTop"/>
+   <property name="collision" value="Full"/>
   </properties>
  </tile>
  <tile id="24">
   <properties>
-   <property name="collision" value="Full"/>
+   <property name="collision" value="SlopeLeftTop"/>
   </properties>
  </tile>
  <tile id="25">
   <properties>
-   <property name="collision" value="Full"/>
+   <property name="collision" value="SlopeLeftBottom"/>
   </properties>
  </tile>
  <tile id="26">
   <properties>
-   <property name="collision" value="Full"/>
+   <property name="collision" value="SlopeRightBottom"/>
   </properties>
  </tile>
  <tile id="27">
   <properties>
-   <property name="collision" value="Full"/>
-  </properties>
- </tile>
- <tile id="29">
-  <properties>
-   <property name="collision" value="Full"/>
+   <property name="collision" value="SlopeRightTop"/>
   </properties>
  </tile>
  <tile id="30">
@@ -151,24 +126,275 @@
    <property name="collision" value="Full"/>
   </properties>
  </tile>
+ <tile id="31">
+  <properties>
+   <property name="collision" value="Full"/>
+  </properties>
+ </tile>
  <tile id="32">
   <properties>
-   <property name="collision" value="Ladder"/>
+   <property name="collision" value="Full"/>
   </properties>
  </tile>
  <tile id="33">
   <properties>
-   <property name="collision" value="Platform"/>
-  </properties>
- </tile>
- <tile id="34">
-  <properties>
-   <property name="collision" value="Platform"/>
+   <property name="collision" value="Full"/>
   </properties>
  </tile>
  <tile id="35">
   <properties>
+   <property name="collision" value="Full"/>
+  </properties>
+ </tile>
+ <tile id="36">
+  <properties>
+   <property name="collision" value="Full"/>
+  </properties>
+ </tile>
+ <tile id="40">
+  <properties>
+   <property name="collision" value="Ladder"/>
+  </properties>
+ </tile>
+ <tile id="41">
+  <properties>
    <property name="collision" value="Platform"/>
+  </properties>
+ </tile>
+ <tile id="42">
+  <properties>
+   <property name="collision" value="Platform"/>
+  </properties>
+ </tile>
+ <tile id="43">
+  <properties>
+   <property name="collision" value="Platform"/>
+  </properties>
+ </tile>
+ <tile id="50">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+  <animation>
+   <frame tileid="58" duration="150"/>
+   <frame tileid="50" duration="150"/>
+   <frame tileid="51" duration="150"/>
+   <frame tileid="52" duration="150"/>
+   <frame tileid="53" duration="150"/>
+   <frame tileid="54" duration="150"/>
+   <frame tileid="55" duration="150"/>
+   <frame tileid="56" duration="150"/>
+   <frame tileid="57" duration="150"/>
+   <frame tileid="58" duration="150"/>
+  </animation>
+ </tile>
+ <tile id="51">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="52">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="53">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="54">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="55">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="56">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="57">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="58">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="60">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+  <animation>
+   <frame tileid="60" duration="150"/>
+   <frame tileid="61" duration="150"/>
+   <frame tileid="62" duration="150"/>
+   <frame tileid="63" duration="150"/>
+   <frame tileid="64" duration="150"/>
+   <frame tileid="65" duration="150"/>
+   <frame tileid="66" duration="150"/>
+   <frame tileid="67" duration="150"/>
+   <frame tileid="68" duration="150"/>
+  </animation>
+ </tile>
+ <tile id="61">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="62">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="63">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="64">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="65">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="66">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="67">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="68">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="70">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+  <animation>
+   <frame tileid="78" duration="150"/>
+   <frame tileid="70" duration="150"/>
+   <frame tileid="71" duration="150"/>
+   <frame tileid="72" duration="150"/>
+   <frame tileid="73" duration="150"/>
+   <frame tileid="74" duration="150"/>
+   <frame tileid="75" duration="150"/>
+   <frame tileid="76" duration="150"/>
+   <frame tileid="77" duration="150"/>
+   <frame tileid="78" duration="150"/>
+  </animation>
+ </tile>
+ <tile id="71">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="72">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="73">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="74">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="75">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="76">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="77">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="78">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="80">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+  <animation>
+   <frame tileid="80" duration="150"/>
+   <frame tileid="81" duration="150"/>
+   <frame tileid="82" duration="150"/>
+   <frame tileid="83" duration="150"/>
+   <frame tileid="84" duration="150"/>
+   <frame tileid="85" duration="150"/>
+   <frame tileid="86" duration="150"/>
+   <frame tileid="87" duration="150"/>
+   <frame tileid="88" duration="150"/>
+  </animation>
+ </tile>
+ <tile id="81">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="82">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="83">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="84">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="85">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="86">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="87">
+  <properties>
+   <property name="collision" value="None"/>
+  </properties>
+ </tile>
+ <tile id="88">
+  <properties>
+   <property name="collision" value="None"/>
   </properties>
  </tile>
 </tileset>

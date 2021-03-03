@@ -8,7 +8,37 @@ import * as Net from "./net";
 import { Game } from "./game";
 import { Message, Schema } from "common/net";
 
-export function network(game: Game, socket: Net.Socket) {
+let lastUse = Date.now();
+const USE_CD = 250 /*ms*/;
+export function use(game: Game) {
+    if (game.player === Null || !game.level || !game.level.ready) return;
+
+    const body = game.world.get(game.player, RigidBody)!;
+
+    const portalAABB = new AABB(v2(), v2());
+    const playerAABB = new AABB(body.position.current, TILE_SCALE);
+
+    // TODO: generalize this to 'use' any object
+    // TODO: store object name in object (because Object.values is faster)
+    for (const key of Object.keys(game.level.data.portal)) {
+        const portal = game.level.data.portal[key];
+        portalAABB.half = v2(portal.width / 2, portal.height / 2);
+        portalAABB.center = v2(portal.x + portalAABB.half[0], portal.y + portalAABB.half[1]);
+
+        const now = Date.now();
+        if ((now - lastUse >= USE_CD) && Input.key.isPressed("KeyF") && playerAABB.static(portalAABB)) {
+            console.log(`use portal '${key}'`);
+
+            const use = new Schema.Action.Use(key);
+            game.socket.send(Message.build(Schema.Action.Id.Use, use.write()));
+
+            lastUse = now;
+        }
+    }
+}
+
+export function network(game: Game) {
+    const socket = game.socket;
     if (socket.state === Net.Socket.OPEN) {
         game.world.view(NetPos).each((_, p) => p.update(v2.clone(p.current)));
 
@@ -86,8 +116,10 @@ function SlopeCollision(tx: number, ty: number, worldX: number, tileBox: AABB, e
 
 const GRAVITY = 0.69;
 const TERMINAL_VELOCITY = GRAVITY * 10;
-export function physics(world: World, player: Entity, level?: Level) {
-    if (player === Null || level == null || !level.ready) return;
+export function physics(game: Game) {
+    if (!game.ready()) return;
+    const world = game.world, player = game.player, level = game.level;
+
     const body = world.get(player, RigidBody)!;
     /// The physics system is a big bulky beast.
     /// The reason for this is that platformer physics
@@ -109,10 +141,10 @@ export function physics(world: World, player: Entity, level?: Level) {
     if (body.cstate !== CollisionState.Ladder &&
         // if both 'left' and 'right' keys are pressed,
         // don't move in either direction
-        !(Input.isPressed("KeyA") && Input.isPressed("KeyD"))) {
+        !(Input.key.isPressed("KeyA") && Input.key.isPressed("KeyD"))) {
 
-        if (Input.isPressed("KeyA")) direction = -1;
-        if (Input.isPressed("KeyD")) direction = 1;
+        if (Input.key.isPressed("KeyA")) direction = -1;
+        if (Input.key.isPressed("KeyD")) direction = 1;
     }
 
     if (direction !== 0) {
@@ -147,7 +179,7 @@ export function physics(world: World, player: Entity, level?: Level) {
         case CollisionState.Ground: {
             // if we're on the ground, that's jumping
             body.velocity[1] = 0;
-            if (Input.isPressed("Space")) {
+            if (Input.key.isPressed("Space")) {
                 body.cstate = CollisionState.Air;
                 body.velocity[1] = -body.jumpSpeed;
             }
@@ -158,8 +190,8 @@ export function physics(world: World, player: Entity, level?: Level) {
             //      - maybe just the top/bottom tiles?
             body.velocity[1] = 0;
             // if we're on a ladder, that's the 'up' and 'down' keys
-            if (Input.isPressed("KeyW")) body.velocity[1] -= body.ladderSpeed;
-            if (Input.isPressed("KeyS")) body.velocity[1] += body.ladderSpeed;
+            if (Input.key.isPressed("KeyW")) body.velocity[1] -= body.ladderSpeed;
+            if (Input.key.isPressed("KeyS")) body.velocity[1] += body.ladderSpeed;
             break;
         }
     }
@@ -178,7 +210,7 @@ export function physics(world: World, player: Entity, level?: Level) {
 
     // climbing ladders
     if (body.cstate !== CollisionState.Ladder) {
-        if (Input.isPressed("KeyW")) {
+        if (Input.key.isPressed("KeyW")) {
             // if there's a ladder tile on the entity
             if (level.collisionKind(centerTX, centerTY) === CollisionKind.Ladder) {
                 // grab onto it
@@ -188,7 +220,7 @@ export function physics(world: World, player: Entity, level?: Level) {
                 body.velocity[0] = 0;
             }
         }
-        else if (Input.isPressed("KeyS")) {
+        else if (Input.key.isPressed("KeyS")) {
             // the ladder tile may also be below the entity
             if (level.collisionKind(centerTX, centerTY + 1) === CollisionKind.Ladder) {
                 body.cstate = CollisionState.Ladder;
@@ -199,7 +231,7 @@ export function physics(world: World, player: Entity, level?: Level) {
             }
         }
     } else {
-        if (Input.isPressed("KeyX")) {
+        if (Input.key.isPressed("KeyX")) {
             body.cstate = CollisionState.Air;
         }
     }
@@ -263,7 +295,7 @@ export function physics(world: World, player: Entity, level?: Level) {
                             // collide when the normal === -y and
                             // we were previously moving down
                             // AND the down key is not pressed
-                            if (!Input.isPressed("KeyS") &&
+                            if (!Input.key.isPressed("KeyS") &&
                                 body.position.previous[1] < body.position.current[1]) {
                                 // move the tile AABB into the tile's position
                                 tileBox.center[0] = tx * TILESIZE + TILESIZE_HALF;
@@ -406,7 +438,7 @@ export function physics(world: World, player: Entity, level?: Level) {
                 }
                 // if the "down" key is pressed, entity wants to
                 // jump down from the platform
-                if (Input.isPressed("KeyS") &&
+                if (Input.key.isPressed("KeyS") &&
                     level.collisionKind(groundTileXLeft, groundTileY) === CollisionKind.Platform &&
                     level.collisionKind(groundTileXRight, groundTileY) === CollisionKind.Platform) {
                     body.cstate = CollisionState.Air;
@@ -521,7 +553,9 @@ function animate(sprite: Sprite, dpos: Vector2, cstate: CollisionState) {
     sprite.animation = animation;
 }
 
-export function animation(world: World, player: Entity) {
+export function animation(game: Game) {
+    if (!game.ready()) return;
+    const world = game.world, player = game.player;
     // animate entities
     world.view(Sprite, NetPos).each((_, sprite, pos) => {
         const p0 = pos.previous;

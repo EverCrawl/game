@@ -1,4 +1,6 @@
 
+# TODO: fix field ordering being non-deterministic
+
 Position: struct {
     x: float,
     y: float
@@ -9,8 +11,14 @@ Entity: struct {
     position: Position
 }
 
+Player: struct {
+    id: uint32,
+    level: string,
+    position: Position
+}
+
 Initial: struct {
-    player: Entity,
+    player: Player,
     entities: Entity[]
 }
 

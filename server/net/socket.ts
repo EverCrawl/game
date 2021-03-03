@@ -1,6 +1,7 @@
 import { Message } from "common/net/message";
 import { Constructor } from "common/utils";
 import { NetWorker } from "./worker";
+import Log from "server/util/log";
 
 export class Socket {
     public state: "open" | "closed" = "open";
@@ -58,7 +59,7 @@ export class SocketManager<TSocket extends Socket = Socket> {
         this.onopen = NOP;
         this.onclose = NOP;
         this.onmessage = NOP;
-        this.onerror = err => console.error(err);
+        this.onerror = err => Log.error(err);
     }
 
     get size() {
@@ -67,7 +68,7 @@ export class SocketManager<TSocket extends Socket = Socket> {
 
     async start(): Promise<void> {
         return new Promise((resolve, reject) => {
-            console.log(`Opening NetWorker on port ${this.port}`);
+            Log.info(`Opening NetWorker on port ${this.port}`);
             this.worker = new NetWorker(this.port, this.maxSockets);
             this.worker.once("message", this.beforeReady.bind(this, resolve, reject));
         });
@@ -96,12 +97,25 @@ export class SocketManager<TSocket extends Socket = Socket> {
      * Send `data` to every socket expect for those in `exclude`.
      * 
      * This is faster than sending the data to one socket at a time.
+     * 
+     * `include === true` means the broadcast recipients will only include sessions from `ids`.
      */
-    broadcast(data: ArrayBuffer, exclude?: number[]) {
+    broadcast(data: ArrayBuffer, include: true, ids: number[]): void;
+    /**
+     * Send `data` to every socket expect for those in `exclude`.
+     * 
+     * This is faster than sending the data to one socket at a time.
+     * 
+     * `include === false` means the broadcast recipient will be every session,
+     * expect for those in `ids`.
+     */
+    broadcast(data: ArrayBuffer, include: false, ids?: number[]): void;
+    /** @internal implementation */
+    broadcast(data: ArrayBuffer, include: boolean, ids?: number[]) {
         if (this.worker === null || !this.worker.running) {
             return;
         }
-        this.worker.broadcast(data, exclude);
+        this.worker.broadcast(data, include as any, ids);
     }
 
     private onSocketEvent = (event: Event) => {
@@ -128,7 +142,7 @@ export class SocketManager<TSocket extends Socket = Socket> {
             default: {
                 this.worker!.postMessage([CommandKind.Shutdown]);
                 this.worker = null;
-                console.error(`Invalid socket event while SocketListener->NetWorker is running: `, event);
+                Log.error(`Invalid socket event while SocketListener->NetWorker is running: `, event);
             } break;
         }
     }
@@ -138,11 +152,11 @@ export class SocketManager<TSocket extends Socket = Socket> {
     }
 
     private beforeReady(resolve: () => void, reject: (reason: string) => void, event: any) {
-        console.log(event);
+        Log.info(event);
         let sEvent = event as Event;
         switch (sEvent[0]) {
             case EventKind.Ready: {
-                console.log(`NetWorker ready`);
+                Log.info(`NetWorker ready`);
                 this.worker!.on("message", this.onSocketEvent);
                 this.worker!.on("error", this.onSocketError);
                 resolve();
@@ -227,7 +241,7 @@ export const enum CommandKind {
 }
 export type SendCommand = [kind: CommandKind.Send, id: number, data: ArrayBuffer];
 export type CloseCommand = [kind: CommandKind.Close, id: number];
-export type BroadcastCommand = [kind: CommandKind.Broadcast, ids: Uint32Array, data: ArrayBuffer];
+export type BroadcastCommand = [kind: CommandKind.Broadcast, ids: Uint32Array, include: boolean, data: ArrayBuffer];
 export type ShutdownCommand = [kind: CommandKind.Shutdown];
 export type Command =
     | SendCommand

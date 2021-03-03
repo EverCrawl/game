@@ -83,7 +83,6 @@ export class Texture {
         GL.bindTexture(this.target, this.handle);
     }
 
-    private static readonly imageCache = new Map<string, HTMLImageElement>();
     static create(kind: TextureKind.Image2D, options: TextureImage2DOptions): Texture;
     static create(kind: TextureKind.Atlas, options: TextureAtlasOptions): Texture;
     static create(kind: TextureKind.Buffer, options: TextureBufferOptions): Texture;
@@ -92,21 +91,13 @@ export class Texture {
         switch (kind) {
             case TextureKind.Image2D: {
                 const path = (options as TextureImage2DOptions).path;
-                img = Texture.imageCache.get(path);
-                if (!img) {
-                    img = new Image();
-                    img.src = path;
-                    Texture.imageCache.set(path, img);
-                }
+                img = new Image();
+                img.src = path;
             } break;
             case TextureKind.Atlas: {
                 const path = (options as TextureAtlasOptions).path;
-                img = Texture.imageCache.get(path);
-                if (!img) {
-                    img = new Image();
-                    img.src = path;
-                    Texture.imageCache.set(path, img);
-                }
+                img = new Image();
+                img.src = path;
             } break;
             case TextureKind.Buffer: {
                 img = toImageElement(

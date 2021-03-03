@@ -2,8 +2,9 @@
 import { Schema } from "common/net";
 import { Game } from "client/core/game";
 import { Player } from "client/core/game/entity";
-import { NetPos } from "common/component";
+import { NetPos, RigidBody } from "common/component";
 import { v2 } from "common/math";
+import { Level } from "client/core/map";
 
 export const HandlerTable = {
     [Schema.Id.Initial]: [
@@ -13,6 +14,8 @@ export const HandlerTable = {
                 packet.player.id,
                 "assets/sprites/mushroom.json",
                 v2(packet.player.position.x, packet.player.position.y));
+
+            game.level = new Level(`assets/maps/${packet.player.level}.amt`);
 
             for (let i = 0; i < packet.entities.length; ++i) {
                 const entity = packet.entities[i];
@@ -50,9 +53,32 @@ export const HandlerTable = {
                 const pos = game.world.get(entity.id, NetPos)!;
                 pos.update([entity.x, entity.y]);
                 pos.cstate = entity.cstate;
-                console.log(entity.id, entity.x, entity.y);
             }
         }
     ],
+    [Schema.Id.Transfer]: [
+        Schema.Transfer,
+        function (game: Game, packet: Schema.Transfer) {
+            // TODO: pre-load neighbouring levels
+            // TODO: maintain velocity during transfer
+            game.world.get(game.player, RigidBody)!
+                .reset(v2(packet.x, packet.y));
+            game.level = new Level(`assets/maps/${packet.level}.amt`);
+
+            // destroy every entity except for player
+            game.world.view().each((entity) => {
+                if (entity === game.player) return;
+                game.world.destroy(entity);
+            });
+            for (let i = 0; i < packet.entities.length; ++i) {
+                const entity = packet.entities[i];
+                if (entity.id === game.player) continue;
+                Player.insert(game.world,
+                    entity.id,
+                    "assets/sprites/mushroom.json",
+                    v2(entity.position.x, entity.position.y));
+            }
+        }
+    ]
 } as const;
 export type HandlerTable = typeof HandlerTable;

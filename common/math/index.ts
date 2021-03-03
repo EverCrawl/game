@@ -30,6 +30,11 @@ export class Interpolated<T> {
         this.current_ = value;
     }
 
+    public reset(value: T): void {
+        this.previous_ = value;
+        this.current_ = value;
+    }
+
     public get(weight: number): T {
         return this.lerp(this.previous_, this.current_, weight);
     }

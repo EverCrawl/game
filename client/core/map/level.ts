@@ -1,5 +1,5 @@
 
-import { Texture, TextureKind } from "client/core/gfx";
+import { Renderer, Texture, TextureKind } from "client/core/gfx";
 import { v2, v4, Vector2, Vector4 } from "common/math";
 import { Path } from "common/utils";
 
@@ -29,7 +29,7 @@ export function TileId(value: number): number {
 }
 
 interface TileData {
-    [tileIndex: number]: { [field: string]: any }
+    [tileIndex: number]: { anim: number[], props: { [field: string]: any } }
 }
 
 interface TilesetData {
@@ -38,12 +38,12 @@ interface TilesetData {
 }
 
 export class Tileset {
-    readonly ready: boolean = false;
-    readonly texture!: Readonly<Texture>;
-    readonly tiles!: Readonly<TileData>;
+    ready: boolean = false;
+    texture!: Texture;
+    tiles!: TileData;
 
     constructor(
-        readonly path: string
+        public path: string
     ) {
         console.log(`Loading tileset '${this.path}'`);
         fetch(path)
@@ -55,7 +55,6 @@ export class Tileset {
     onerror: ((evt: string | Event) => void) = e => console.error(`Error while loading tileset '${this.path}': `, e);
 
     private load(data: TilesetData) {
-        console.log(data);
         const path = Path.join(Path.dirname(this.path), data.image);
         const tex = Texture.create(TextureKind.Atlas, { path, tilesize: TILESIZE });
         tex.onload = () => {
@@ -70,47 +69,36 @@ export class Tileset {
     }
 }
 
-interface EllipseObject {
+interface BaseObject {
+    type?: string,
     id: number,
-    type: "ellipse",
     x: number,
     y: number,
+    props?: { [field: string]: any }
+}
+
+interface EllipseObject extends BaseObject {
+    base: "ellipse",
     width: number,
     height: number,
-    props: { [field: string]: any }
 }
 
-interface PointObject {
-    id: number,
-    type: "point",
-    x: number,
-    y: number,
-    props: { [field: string]: any }
+interface PointObject extends BaseObject {
+    base: "point",
 }
 
-interface PolygonObject {
-    id: number,
-    type: "polygon",
-    x: number,
-    y: number,
+interface PolygonObject extends BaseObject {
+    base: "polygon",
     points: [number, number][],
-    props: { [field: string]: any }
 }
 
-interface PolylineObject {
-    id: number,
-    type: "polyline",
-    x: number,
-    y: number,
+interface PolylineObject extends BaseObject {
+    base: "polyline",
     points: [number, number][],
-    props: { [field: string]: any }
 }
 
-interface TextObject {
-    id: number,
-    type: "text",
-    x: number,
-    y: number,
+interface TextObject extends BaseObject {
+    base: "text",
     width: number,
     height: number,
     text: {
@@ -118,28 +106,23 @@ interface TextObject {
         wrap: boolean,
         content: string
     },
-    props: { [field: string]: any }
 }
 
-interface TileObject {
-    id: number,
-    type: "tile",
+interface TileObject extends BaseObject {
+    base: "tile",
     tileId: number,
-    x: number,
-    y: number,
     width: number,
     height: number,
-    props: { [field: string]: any }
 }
 
-interface RectangleObject {
-    id: number,
-    type: "rect",
-    x: number,
-    y: number,
+interface RectangleObject extends BaseObject {
+    base: "rect",
     width: number,
     height: number,
-    props: { [field: string]: any }
+}
+
+interface PortalObject extends RectangleObject {
+    type: "portal"
 }
 
 type LevelObject =
@@ -179,10 +162,10 @@ interface LevelData {
 }
 
 interface LoadedLevelData {
-    readonly width: number,
-    readonly height: number,
-    readonly background: Vector4,
-    readonly tilesets: readonly Readonly<Tileset>[],
+    width: number,
+    height: number,
+    background: Vector4,
+    tilesets: Tileset[],
     /** 
      * Collision data stored in a grid
      * 
@@ -190,7 +173,7 @@ interface LoadedLevelData {
      * 
      * Where `tileX < level.width` and `tileY < level.height`
      */
-    readonly collision: readonly CollisionKind[],
+    collision: CollisionKind[],
     /**
      * Array of tile layers
      * 
@@ -198,20 +181,21 @@ interface LoadedLevelData {
      * 
      * `tile = level.tiles[layer][tileX + tileY * level.width]`
      */
-    readonly tile: readonly number[][],
-    readonly object: { readonly [name: string]: Readonly<LevelObject> }
+    tile: number[][],
+    object: { [name: string]: LevelObject },
+    portal: { [name: string]: PortalObject }
 }
 
 export class Level {
-    readonly ready: boolean = false;
-    readonly data!: LoadedLevelData
+    ready: boolean = false;
+    data!: LoadedLevelData
     /**
      * Width/height in pixels
      */
-    readonly size!: { x: number, y: number };
+    size!: { x: number, y: number };
 
     constructor(
-        readonly path: string
+        public path: string
     ) {
         console.log(`Loading level '${this.path}'`);
         fetch(path)
@@ -225,6 +209,50 @@ export class Level {
 
     onload: (() => void) | null = null
     onerror: ((evt: string | Event) => void) = e => console.error(`Error while loading level '${this.path}': `, e);
+
+    private animIndex = 0;
+    private lastAnimStep = Date.now();
+    render(renderer: Renderer, worldOffset: Vector2) {
+        renderer.background = this.data.background;
+        // render level tile layers
+        let renderLayerId = -10;
+        for (let layerIndex = 0; layerIndex < this.data.tile.length; ++layerIndex) {
+            for (let y = 0; y < this.data.height; ++y) {
+                for (let x = 0; x < this.data.width; ++x) {
+                    let tile = this.data.tile[layerIndex][x + y * this.data.width];
+                    if (tile === 0) continue;
+                    // have to remove '1' to get the actual ID
+                    // because all IDs are offset by '1' due to '0' having a special value
+                    tile -= 1;
+                    const tilesetIndex = tile & TILESET_ID_MASK;
+                    const tileset = this.data.tilesets[tilesetIndex];
+                    let tileId = tile & TILE_ID_MASK;
+                    const anim = tileset.tiles[tileId]?.anim;
+                    if (anim && anim.length > 0) {
+                        // tile has animation
+                        tileId = anim[this.animIndex % anim.length];
+                    }
+                    // tiles are rendered from the center
+                    // so we add TILESIZE_HALF to offset it 
+                    // to the top-left corner
+                    const tilePos = v2(
+                        TILESIZE_HALF + x * TILESIZE + worldOffset[0],
+                        TILESIZE_HALF + y * TILESIZE + worldOffset[1]
+                    );
+                    renderer.command.tile(
+                        tileset.texture, renderLayerId++, tileId,
+                        tilePos, 0, TILE_SCALE);
+                }
+            }
+        }
+
+        // TODO: per-animation step
+        const now = Date.now();
+        if (now - this.lastAnimStep >= 150 /*ms*/) {
+            this.animIndex++;
+            this.lastAnimStep = now;
+        }
+    }
 
     private load(data: LevelData) {
         // load tilesets first
@@ -246,6 +274,16 @@ export class Level {
             // use loaded tilesets
             for (const [index, tileset] of results) {
                 (<Tileset[]>this.data.tilesets)[index] = tileset;
+            }
+
+            // move portals from object into portal field
+            this.data.portal = {};
+            for (const name of Object.keys(this.data.object)) {
+                const obj = this.data.object[name];
+                if (obj.type === "portal") {
+                    delete ((<any>this.data.object)[name]);
+                    this.data.portal[name] = (obj as PortalObject);
+                }
             }
 
             // background RGBA hex -> RGBA Vector4
