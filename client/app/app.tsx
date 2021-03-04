@@ -1,5 +1,5 @@
 import { h, Component, createRef } from 'preact';
-import "./App.css";
+import "./app.css";
 
 import OverlayContainer from "./overlay";
 import { Game } from "client/core/game";

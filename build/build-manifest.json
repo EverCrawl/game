@@ -1,0 +1,978 @@
+{
+  "inputs": {
+    "_snowpack/env.js": {
+      "bytes": 97,
+      "imports": []
+    },
+    "dist/env.js": {
+      "bytes": 140,
+      "imports": [
+        {
+          "path": "_snowpack/env.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "_snowpack/pkg/preact.js": {
+      "bytes": 8961,
+      "imports": []
+    },
+    "dist/app/app.css": {
+      "bytes": 712,
+      "imports": []
+    },
+    "dist/app/overlay.css": {
+      "bytes": 147,
+      "imports": []
+    },
+    "dist/app/overlay.js": {
+      "bytes": 401,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/preact.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/app/overlay.css",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "_snowpack/pkg/uecs.js": {
+      "bytes": 3227,
+      "imports": []
+    },
+    "dist/core/gfx/error.js": {
+      "bytes": 2816,
+      "imports": []
+    },
+    "dist/core/gfx/common.js": {
+      "bytes": 1341,
+      "imports": [
+        {
+          "path": "dist/core/gfx/error.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/buffer.js": {
+      "bytes": 3458,
+      "imports": [
+        {
+          "path": "dist/core/gfx/common.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/error.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/math/collision.js": {
+      "bytes": 22662,
+      "imports": [
+        {
+          "path": "dist/math/index.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/math/common.js": {
+      "bytes": 996,
+      "imports": []
+    },
+    "dist/math/matrix3.js": {
+      "bytes": 2576,
+      "imports": []
+    },
+    "dist/math/matrix4.js": {
+      "bytes": 2476,
+      "imports": []
+    },
+    "dist/math/vector2.js": {
+      "bytes": 3445,
+      "imports": []
+    },
+    "dist/math/vector3.js": {
+      "bytes": 101,
+      "imports": []
+    },
+    "dist/math/vector4.js": {
+      "bytes": 523,
+      "imports": []
+    },
+    "dist/math/index.js": {
+      "bytes": 697,
+      "imports": [
+        {
+          "path": "dist/math/collision.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/common.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/matrix3.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/matrix4.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/vector2.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/vector3.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/vector4.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/camera.js": {
+      "bytes": 1659,
+      "imports": [
+        {
+          "path": "dist/math/index.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/shader.js": {
+      "bytes": 7812,
+      "imports": [
+        {
+          "path": "dist/core/gfx/common.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/error.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/glsl/sprite.js": {
+      "bytes": 699,
+      "imports": [
+        {
+          "path": "dist/core/gfx/shader.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/glsl/tile.js": {
+      "bytes": 860,
+      "imports": [
+        {
+          "path": "dist/core/gfx/shader.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/glsl/line.js": {
+      "bytes": 528,
+      "imports": [
+        {
+          "path": "dist/core/gfx/shader.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/glsl/point.js": {
+      "bytes": 827,
+      "imports": [
+        {
+          "path": "dist/core/gfx/shader.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/glsl/index.js": {
+      "bytes": 283,
+      "imports": [
+        {
+          "path": "dist/core/gfx/glsl/sprite.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/glsl/tile.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/glsl/line.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/glsl/point.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/vertex_array.js": {
+      "bytes": 1807,
+      "imports": [
+        {
+          "path": "dist/core/gfx/common.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/error.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/mesh/quad.js": {
+      "bytes": 729,
+      "imports": [
+        {
+          "path": "dist/core/gfx/buffer.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/vertex_array.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/mesh/index.js": {
+      "bytes": 101,
+      "imports": [
+        {
+          "path": "dist/core/gfx/mesh/quad.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/renderer.js": {
+      "bytes": 6034,
+      "imports": [
+        {
+          "path": "dist/math/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/glsl/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/mesh/index.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/texture.js": {
+      "bytes": 5308,
+      "imports": [
+        {
+          "path": "dist/core/gfx/common.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/sprite.js": {
+      "bytes": 5436,
+      "imports": [
+        {
+          "path": "dist/math/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/texture.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/gfx/viewport.js": {
+      "bytes": 503,
+      "imports": []
+    },
+    "dist/core/gfx/index.js": {
+      "bytes": 272,
+      "imports": [
+        {
+          "path": "dist/core/gfx/buffer.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/camera.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/common.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/renderer.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/shader.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/sprite.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/texture.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/vertex_array.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/viewport.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/component.js": {
+      "bytes": 1847,
+      "imports": [
+        {
+          "path": "dist/math/index.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/game/entity.js": {
+      "bytes": 1811,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/uecs.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/component.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/utils/array.js": {
+      "bytes": 916,
+      "imports": []
+    },
+    "dist/utils/filter.js": {
+      "bytes": 216,
+      "imports": []
+    },
+    "dist/utils/number.js": {
+      "bytes": 291,
+      "imports": []
+    },
+    "dist/utils/object.js": {
+      "bytes": 65,
+      "imports": []
+    },
+    "dist/utils/path.js": {
+      "bytes": 3476,
+      "imports": []
+    },
+    "dist/utils/string.js": {
+      "bytes": 1961,
+      "imports": []
+    },
+    "dist/utils/index.js": {
+      "bytes": 643,
+      "imports": [
+        {
+          "path": "dist/utils/array.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/utils/filter.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/utils/number.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/utils/object.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/utils/path.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/utils/string.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/map/level.js": {
+      "bytes": 4538,
+      "imports": [
+        {
+          "path": "dist/core/gfx/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/utils/index.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/map/index.js": {
+      "bytes": 28,
+      "imports": [
+        {
+          "path": "dist/core/map/level.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/game/input.js": {
+      "bytes": 1659,
+      "imports": [
+        {
+          "path": "dist/component.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/index.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "_snowpack/pkg/packet.js": {
+      "bytes": 3521,
+      "imports": []
+    },
+    "dist/net/schema/action/move.js": {
+      "bytes": 1392,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/packet.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/net/schema/action/use.js": {
+      "bytes": 597,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/packet.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/net/schema/action/index.js": {
+      "bytes": 179,
+      "imports": [
+        {
+          "path": "dist/net/schema/action/move.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/net/schema/action/use.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/net/schema/create.js": {
+      "bytes": 757,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/packet.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/net/schema/delete.js": {
+      "bytes": 476,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/packet.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/net/schema/initial.js": {
+      "bytes": 2131,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/packet.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/net/schema/position.js": {
+      "bytes": 672,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/packet.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/net/schema/transfer.js": {
+      "bytes": 1830,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/packet.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/net/schema/index.js": {
+      "bytes": 736,
+      "imports": [
+        {
+          "path": "dist/net/schema/action/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/net/schema/action/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/net/schema/create.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/net/schema/delete.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/net/schema/initial.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/net/schema/position.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/net/schema/transfer.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/net/message.js": {
+      "bytes": 1266,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/packet.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/net/schema/index.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/net/index.js": {
+      "bytes": 75,
+      "imports": [
+        {
+          "path": "dist/net/message.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/net/schema/index.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/game/net/handle.js": {
+      "bytes": 2421,
+      "imports": [
+        {
+          "path": "dist/net/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/game/entity.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/component.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/map/index.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/game/net/index.js": {
+      "bytes": 2303,
+      "imports": [
+        {
+          "path": "dist/core/game/net/handle.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/game/system.js": {
+      "bytes": 17244,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/uecs.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/component.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/map/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/game/input.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/game/net/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/net/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/game/entity.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/runtime.js": {
+      "bytes": 911,
+      "imports": []
+    },
+    "dist/core/game/game.js": {
+      "bytes": 2363,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/uecs.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/runtime.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/game/system.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/game/net/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/game/input.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/math/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/component.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/game/entity.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/core/game/index.js": {
+      "bytes": 105,
+      "imports": [
+        {
+          "path": "dist/core/game/entity.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/game/system.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/game/game.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/app/app.js": {
+      "bytes": 955,
+      "imports": [
+        {
+          "path": "_snowpack/pkg/preact.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/app/app.css",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/app/overlay.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/game/index.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "dist/index.js": {
+      "bytes": 158,
+      "imports": [
+        {
+          "path": "dist/env.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "_snowpack/pkg/preact.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/app/app.js",
+          "kind": "import-statement"
+        }
+      ]
+    }
+  },
+  "outputs": {
+    "../~~bundle~~/dist/index.js": {
+      "imports": [],
+      "exports": [],
+      "entryPoint": "dist/index.js",
+      "inputs": {
+        "_snowpack/env.js": {
+          "bytesInOutput": 99
+        },
+        "dist/env.js": {
+          "bytesInOutput": 47
+        },
+        "_snowpack/pkg/preact.js": {
+          "bytesInOutput": 8929
+        },
+        "dist/app/app.css": {
+          "bytesInOutput": 0
+        },
+        "dist/app/overlay.css": {
+          "bytesInOutput": 0
+        },
+        "dist/app/overlay.js": {
+          "bytesInOutput": 184
+        },
+        "_snowpack/pkg/uecs.js": {
+          "bytesInOutput": 3170
+        },
+        "dist/core/gfx/error.js": {
+          "bytesInOutput": 1983
+        },
+        "dist/core/gfx/common.js": {
+          "bytesInOutput": 744
+        },
+        "dist/core/gfx/buffer.js": {
+          "bytesInOutput": 2085
+        },
+        "dist/core/gfx/index.js": {
+          "bytesInOutput": 0
+        },
+        "dist/math/collision.js": {
+          "bytesInOutput": 1865
+        },
+        "dist/math/index.js": {
+          "bytesInOutput": 302
+        },
+        "dist/math/common.js": {
+          "bytesInOutput": 570
+        },
+        "dist/math/matrix3.js": {
+          "bytesInOutput": 1045
+        },
+        "dist/math/matrix4.js": {
+          "bytesInOutput": 960
+        },
+        "dist/math/vector2.js": {
+          "bytesInOutput": 2204
+        },
+        "dist/math/vector3.js": {
+          "bytesInOutput": 65
+        },
+        "dist/math/vector4.js": {
+          "bytesInOutput": 338
+        },
+        "dist/core/gfx/camera.js": {
+          "bytesInOutput": 1015
+        },
+        "dist/core/gfx/glsl/sprite.js": {
+          "bytesInOutput": 656
+        },
+        "dist/core/gfx/shader.js": {
+          "bytesInOutput": 4806
+        },
+        "dist/core/gfx/glsl/tile.js": {
+          "bytesInOutput": 817
+        },
+        "dist/core/gfx/glsl/line.js": {
+          "bytesInOutput": 485
+        },
+        "dist/core/gfx/glsl/point.js": {
+          "bytesInOutput": 784
+        },
+        "dist/core/gfx/mesh/quad.js": {
+          "bytesInOutput": 423
+        },
+        "dist/core/gfx/vertex_array.js": {
+          "bytesInOutput": 934
+        },
+        "dist/core/gfx/renderer.js": {
+          "bytesInOutput": 3648
+        },
+        "dist/core/gfx/texture.js": {
+          "bytesInOutput": 2932
+        },
+        "dist/core/gfx/sprite.js": {
+          "bytesInOutput": 2859
+        },
+        "dist/core/gfx/viewport.js": {
+          "bytesInOutput": 393
+        },
+        "dist/component.js": {
+          "bytesInOutput": 848
+        },
+        "dist/core/game/entity.js": {
+          "bytesInOutput": 761
+        },
+        "dist/core/game/index.js": {
+          "bytesInOutput": 0
+        },
+        "dist/utils/array.js": {
+          "bytesInOutput": 629
+        },
+        "dist/utils/index.js": {
+          "bytesInOutput": 0
+        },
+        "dist/utils/path.js": {
+          "bytesInOutput": 1282
+        },
+        "dist/utils/string.js": {
+          "bytesInOutput": 1005
+        },
+        "dist/core/map/level.js": {
+          "bytesInOutput": 2230
+        },
+        "dist/core/map/index.js": {
+          "bytesInOutput": 0
+        },
+        "dist/core/game/input.js": {
+          "bytesInOutput": 906
+        },
+        "_snowpack/pkg/packet.js": {
+          "bytesInOutput": 3464
+        },
+        "dist/net/schema/index.js": {
+          "bytesInOutput": 432
+        },
+        "dist/net/schema/action/index.js": {
+          "bytesInOutput": 122
+        },
+        "dist/net/schema/action/move.js": {
+          "bytesInOutput": 523
+        },
+        "dist/net/schema/action/use.js": {
+          "bytesInOutput": 270
+        },
+        "dist/net/schema/create.js": {
+          "bytesInOutput": 348
+        },
+        "dist/net/schema/delete.js": {
+          "bytesInOutput": 208
+        },
+        "dist/net/schema/initial.js": {
+          "bytesInOutput": 861
+        },
+        "dist/net/schema/position.js": {
+          "bytesInOutput": 322
+        },
+        "dist/net/schema/transfer.js": {
+          "bytesInOutput": 742
+        },
+        "dist/net/message.js": {
+          "bytesInOutput": 633
+        },
+        "dist/net/index.js": {
+          "bytesInOutput": 0
+        },
+        "dist/core/game/net/handle.js": {
+          "bytesInOutput": 1225
+        },
+        "dist/core/game/net/index.js": {
+          "bytesInOutput": 1329
+        },
+        "dist/core/game/system.js": {
+          "bytesInOutput": 6357
+        },
+        "dist/runtime.js": {
+          "bytesInOutput": 328
+        },
+        "dist/core/game/game.js": {
+          "bytesInOutput": 1032
+        },
+        "dist/app/app.js": {
+          "bytesInOutput": 500
+        },
+        "dist/index.js": {
+          "bytesInOutput": 29
+        }
+      },
+      "bytes": 70821
+    },
+    "../~~bundle~~/dist/index.css": {
+      "imports": [],
+      "inputs": {
+        "dist/app/app.css": {
+          "bytesInOutput": 430
+        },
+        "dist/app/overlay.css": {
+          "bytesInOutput": 89
+        }
+      },
+      "bytes": 520
+    }
+  }
+}
