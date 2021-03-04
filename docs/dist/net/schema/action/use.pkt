@@ -1,0 +1,7 @@
+
+# TODO: 'name' key is invalid, due to JS constraints
+Use: struct {
+    which: string
+}
+
+export Use

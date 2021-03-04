@@ -1,0 +1,19 @@
+
+Position: struct {
+    x: float,
+    y: float
+}
+
+Entity: struct {
+    id: uint32,
+    position: Position
+}
+
+Transfer: struct {
+    level: string,
+    x: float,
+    y: float,
+    entities: Entity[]
+}
+
+export Transfer

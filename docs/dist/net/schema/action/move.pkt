@@ -1,0 +1,13 @@
+
+Entity: struct {
+    id: uint32,
+    cstate: uint8,
+    x: float,
+    y: float
+}
+
+Move: struct {
+    entities: Entity[]
+}
+
+export Move

@@ -1,0 +1,6 @@
+
+Delete: struct {
+    id: uint32
+}
+
+export Delete
