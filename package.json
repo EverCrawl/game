@@ -11,7 +11,8 @@
         "dev:client": "snowpack dev",
         "start:server": "node dist/server/index.js",
         "test": "jest",
-        "build": ""
+        "build": "yarn build:server",
+        "start": "yarn start:server"
     },
     "devDependencies": {
         "@snowpack/plugin-dotenv": "^2.0.5",
