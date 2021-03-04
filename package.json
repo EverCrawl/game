@@ -12,7 +12,8 @@
         "start:server": "node dist/server/index.js",
         "test": "jest",
         "build": "yarn build:server",
-        "start": "yarn start:server"
+        "start": "yarn start:server",
+        "heroku-prebuild": "rm yarn.lock"
     },
     "devDependencies": {
         "@snowpack/plugin-dotenv": "^2.0.5",
