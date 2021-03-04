@@ -6,8 +6,9 @@ import * as System from "./system";
 import * as Net from "./net";
 import * as Input from "./input";
 import { v2 } from "common/math";
-import { NetPos, RigidBody } from "common/component";
+import { NetTransform, RigidBody } from "common/component";
 import { Level } from "client/core/map";
+import { Player } from "./entity";
 
 // @ts-ignore
 if (DEBUG) {
@@ -102,6 +103,7 @@ export class Game {
 
     update() {
         Input.update();
+        /* System.shoot(this); */
         System.use(this);
         System.network(this);
         System.physics(this);
@@ -126,18 +128,25 @@ export class Game {
 
             this.level.render(renderer, worldOffset);
 
-            // draw all sprites except for player, who is drawn last
-            this.world.view(Sprite, NetPos).each((entity, sprite, position) => {
+            // during rendering, order in the same layer is maintained
+            // so the player is drawn last, to ensure it's drawn on top
+            // of every other entity
+            this.world.view(Sprite, NetTransform).each((entity, sprite, transform) => {
                 if (entity === this.player) return;
 
-                const interpolatedPosition = position.get(frameTime);
-                sprite.draw(renderer, 0, v2(
-                    worldOffset[0] + interpolatedPosition[0],
-                    worldOffset[1] + interpolatedPosition[1] + 8
-                ), 0, v2(0.5, 0.5));
+                const lt = transform.get(frameTime);
+                if (this.world.has(entity, Player.TAG)) {
+                    sprite.draw(renderer, 0, v2(
+                        worldOffset[0] + lt.position[0],
+                        worldOffset[1] + lt.position[1] + 8
+                    ), 0, v2(0.5, 0.5));
+                } else {
+                    sprite.draw(renderer, 0, v2(
+                        worldOffset[0] + lt.position[0],
+                        worldOffset[1] + lt.position[1]
+                    ), lt.rotation, lt.scale);
+                }
             });
-
-            // draw player - he's drawn on top of every other entity in the sprite layer
             this.world.get(this.player, Sprite)!
                 .draw(renderer, 0, v2(0, 8), 0, v2(0.5, 0.5));
 

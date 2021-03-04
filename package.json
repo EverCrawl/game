@@ -10,7 +10,8 @@
         "dev:server": "ts-node --project tsconfig.json -r tsconfig-paths/register .",
         "dev:client": "snowpack dev",
         "start:server": "node dist/server/index.js",
-        "test": "jest"
+        "test": "jest",
+        "build": ""
     },
     "devDependencies": {
         "@snowpack/plugin-dotenv": "^2.0.5",
@@ -33,5 +34,9 @@
         "tiled-loader": "git+https://github.com/EverCrawl/tiled-loader.git",
         "uWebSockets.js": "uNetworking/uWebSockets.js#v18.14.0",
         "uecs": "^0.2.6"
+    },
+    "engines": {
+        "node": "15.x",
+        "yarn": "1.x"
     }
 }

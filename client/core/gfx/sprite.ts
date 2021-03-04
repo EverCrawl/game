@@ -17,6 +17,10 @@ export interface LayerMap {
     [name: string]: Layer;
 }
 
+interface SpriteCallbacks {
+    frame: ((anim: string, frame: number, length: number) => void)[],
+}
+
 export class Sprite {
     private spritesheet: Spritesheet_Friend;
 
@@ -42,6 +46,12 @@ export class Sprite {
 
         this.frameIndex = 0;
         this.lastAnimationStep = Date.now();
+    }
+
+    private callbacks: SpriteCallbacks = { frame: [] };
+    addEventListener(type: "frame", callback: (anim: string, frame: number, length: number) => void): void;
+    addEventListener(type: string, callback: any) {
+        this.callbacks[type as keyof SpriteCallbacks].push(callback);
     }
 
     get animations(): Readonly<AnimationMap> | null {
@@ -81,7 +91,15 @@ export class Sprite {
         const now = Date.now();
         if (now - this.lastAnimationStep > anim.frames[this.frameIndex].delay) {
             this.lastAnimationStep = now;
-            this.frameIndex = (this.frameIndex + 1) % anim.frames.length;
+            this.frameIndex += 1;
+
+            for (let i = 0; i < this.callbacks.frame.length; ++i) {
+                this.callbacks.frame[i](this.animation_, this.frameIndex, anim.frames.length);
+            }
+
+            if (this.frameIndex === anim.frames.length) {
+                this.frameIndex = 0;
+            }
         }
 
         for (const spriteLayer of Object.keys(this.spritesheet.layers!)) {

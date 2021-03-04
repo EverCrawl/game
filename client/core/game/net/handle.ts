@@ -2,7 +2,7 @@
 import { Schema } from "common/net";
 import { Game } from "client/core/game";
 import { Player } from "client/core/game/entity";
-import { NetPos, RigidBody } from "common/component";
+import { NetTransform, RigidBody, Transform } from "common/component";
 import { v2 } from "common/math";
 import { Level } from "client/core/map";
 
@@ -50,8 +50,8 @@ export const HandlerTable = {
             for (let i = 0, len = packet.entities.length; i < len; ++i) {
                 const entity = packet.entities[i];
                 if (entity.id === game.player) continue;
-                const pos = game.world.get(entity.id, NetPos)!;
-                pos.update([entity.x, entity.y]);
+                const pos = game.world.get(entity.id, NetTransform)!;
+                pos.update(new Transform([entity.x, entity.y], pos.current.rotation, v2.clone(pos.current.scale)));
                 pos.cstate = entity.cstate;
             }
         }

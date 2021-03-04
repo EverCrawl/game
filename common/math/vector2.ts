@@ -282,10 +282,10 @@ v2.perp = function perp(vec: Vector2): Vector2 {
 /**
  * Angle of `vec` relative to the x axis
  */
-v2.angle = function angle(a: Vector2, b: Vector2): number {
+v2.angle = function angle(a: Vector2, b: Vector2 = v2(1, 0)): number {
     let mag = Math.sqrt(a[0] * a[0] + a[1] * a[1]) * Math.sqrt(b[0] * b[0] + b[1] * b[1]),
         cosine = mag && (a[0] * b[0] + a[1] * b[1]) / mag;
-    return Math.acos(Math.min(Math.max(cosine, -1), 1));
+    return Math.acos(Math.clamp(cosine, -1, 1));
 }
 /**
  * Zeros out components of `vec`

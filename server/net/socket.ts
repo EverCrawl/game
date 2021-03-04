@@ -68,7 +68,6 @@ export class SocketManager<TSocket extends Socket = Socket> {
 
     async start(): Promise<void> {
         return new Promise((resolve, reject) => {
-            Log.info(`Opening NetWorker on port ${this.port}`);
             this.worker = new NetWorker(this.port, this.maxSockets);
             this.worker.once("message", this.beforeReady.bind(this, resolve, reject));
         });
@@ -152,11 +151,10 @@ export class SocketManager<TSocket extends Socket = Socket> {
     }
 
     private beforeReady(resolve: () => void, reject: (reason: string) => void, event: any) {
-        Log.info(event);
         let sEvent = event as Event;
         switch (sEvent[0]) {
             case EventKind.Ready: {
-                Log.info(`NetWorker ready`);
+                Log.info(`NetWorker initialized`);
                 this.worker!.on("message", this.onSocketEvent);
                 this.worker!.on("error", this.onSocketError);
                 resolve();

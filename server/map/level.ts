@@ -1,11 +1,10 @@
 
 import { loadSync } from "tiled-loader";
-// TODO: fix this jank import
-import { CollisionKind } from "tiled-loader/dist/core";
+import { CollisionKind } from "tiled-loader";
 import path from "path";
 import { walk } from "server/util";
 import Log from "server/util/log";
-import { World } from "uecs";
+import { LevelObject, PortalObject } from "common/map/object";
 
 export interface Destination {
     level: string,
@@ -69,79 +68,6 @@ export class Tileset {
         Log.info(`Loaded tileset '${this.path}'`);
     }
 }
-
-type Props = { [field: string]: any };
-
-interface BaseObject {
-    id: number,
-    x: number,
-    y: number,
-    props?: Props
-}
-
-interface EllipseObject extends BaseObject {
-    type: "ellipse",
-    width: number,
-    height: number,
-}
-
-interface PointObject extends BaseObject {
-    type: "point",
-}
-
-interface PolygonObject extends BaseObject {
-    type: "polygon",
-    points: [number, number][],
-}
-
-interface PolylineObject extends BaseObject {
-    type: "polyline",
-    points: [number, number][],
-}
-
-interface TextObject extends BaseObject {
-    type: "text",
-    width: number,
-    height: number,
-    text: {
-        size: number,
-        wrap: boolean,
-        content: string
-    },
-}
-
-interface TileObject extends BaseObject {
-    type: "tile",
-    tileId: number,
-    width: number,
-    height: number,
-}
-
-interface RectangleObject extends BaseObject {
-    type: "rect",
-    width: number,
-    height: number,
-}
-
-interface PortalObject extends BaseObject {
-    type: "portal",
-    width: number,
-    height: number,
-    props: Props & {
-        to: string,
-        direction: "left" | "right"
-    }
-}
-
-type LevelObject =
-    | EllipseObject
-    | PointObject
-    | PolygonObject
-    | PolylineObject
-    | TextObject
-    | TileObject
-    | RectangleObject
-    | PortalObject
 
 interface LevelData {
     width: number,

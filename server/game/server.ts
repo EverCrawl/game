@@ -2,7 +2,7 @@ import { World, Entity } from "uecs";
 import * as Runtime from "common/runtime";
 import { performance } from "perf_hooks";
 import { Player } from "./entity";
-import { NetPos } from "common/component";
+import { NetTransform, Transform } from "common/component";
 import { Message, Schema } from "common/net";
 import { v2 } from "common/math";
 import { Session, SessionManager } from "./session";
@@ -29,18 +29,25 @@ function synchronize(world: World, sessionManager: SessionManager) {
         entities: Schema.Action.Move.Entity[]
     }> = {};
 
-    world.view(NetPos).each((entity, pos) => {
-        if (!state[pos.level]) state[pos.level] = { recipients: [], entities: [] };
+    world.view(NetTransform).each((entity, transform) => {
+        if (!state[transform.level]) state[transform.level] = { recipients: [], entities: [] };
 
-        if (pos.current[0] !== pos.previous[0] || pos.current[1] !== pos.previous[1]) {
-            state[pos.level].entities.push({ id: entity, cstate: pos.cstate, x: pos.current[0], y: pos.current[1] });
+        const current = transform.current.position;
+        const previous = transform.previous.position;
+        if (current[0] !== previous[0] || current[1] !== previous[1]) {
+            state[transform.level].entities.push({
+                id: entity,
+                cstate: transform.cstate,
+                x: current[0],
+                y: current[1]
+            });
         }
-        pos.update(v2.clone(pos.current));
+        transform.update(Transform.clone(transform.current));
 
         // if it's a player -> add it to the list of recipients for its level
         const session = world.get(entity, Session);
         if (session) {
-            state[pos.level].recipients.push(session.id);
+            state[transform.level].recipients.push(session.id);
         }
     });
 
@@ -54,15 +61,15 @@ function synchronize(world: World, sessionManager: SessionManager) {
 }
 
 export class Server {
+    readonly port: number;
     smgr: SessionManager;
     world: World;
     levelStorage: LevelStorage;
 
-    constructor(
-        public readonly port: number
-    ) {
+    constructor() {
         Log.info("Initializing server");
-        this.smgr = new SessionManager(port, 20);
+        this.port = process.env.PORT ? parseInt(process.env.PORT) : 8888;
+        this.smgr = new SessionManager(this.port, 20);
         this.world = new World;
         this.levelStorage = new LevelStorage("assets/maps");
     }
@@ -78,19 +85,19 @@ export class Server {
                 const packet = Schema.Position.read(message.payload);
                 if (!packet) return session.close();
 
-                const pos = this.world.get(entity, NetPos)!;
-                pos.update(v2(packet.x, packet.y));
-                pos.cstate = packet.cstate;
+                const transform = this.world.get(entity, NetTransform)!;
+                transform.update(new Transform(v2(packet.x, packet.y), transform.current.rotation, v2.clone(transform.current.scale)));
+                transform.cstate = packet.cstate;
                 break;
             }
             case Schema.Action.Id.Use: {
                 const packet = Schema.Action.Use.read(message.payload);
                 if (!packet) return session.close();
 
-                const pos = this.world.get(entity, NetPos)!;
+                const ptransform = this.world.get(entity, NetTransform)!;
 
                 // 'pos.level' always exists, but 'object[packet.which]' may not
-                const target = this.levelStorage.levels[pos.level]!.data.object[packet.which];
+                const target = this.levelStorage.levels[ptransform.level]!.data.object[packet.which];
                 // but that's only in the case that the user is messing with the packets,
                 // so disconnect the user immediately
                 if (!target) return session.close();
@@ -114,26 +121,32 @@ export class Server {
                         const crtRecipients = new Array<number>();
                         // entities in the destination level
                         const entities = new Array<Schema.Transfer.Entity>();
-                        this.world.view(NetPos).each((id, npos) => {
+                        this.world.view(NetTransform).each((id, transform) => {
                             if (id === entity) return;
                             const session = this.world.get(id, Session);
                             // if this entity is in the source level
-                            if (npos.level === pos.level) {
+                            if (transform.level === ptransform.level) {
                                 // and it is a player, send it the "delete" packet
                                 if (session) delRecipients.push(session.id);
                             }
                             // else if it's in the destination level
-                            else if (npos.level === dst.level) {
+                            else if (transform.level === dst.level) {
                                 // serialize it
-                                entities.push({ id, position: { x: npos.current[0], y: npos.current[1] } });
+                                entities.push({
+                                    id,
+                                    position: {
+                                        x: transform.current.position[0],
+                                        y: transform.current.position[1]
+                                    }
+                                });
                                 // and if it is a player, send it the "create" packet
                                 if (session) crtRecipients.push(session.id);
                             }
                         });
 
                         // update the player's position
-                        pos.update(v2(dst.x, dst.y));
-                        pos.level = dst.level;
+                        ptransform.update(new Transform(v2(dst.x, dst.y), ptransform.current.rotation, v2.clone(ptransform.current.scale)));
+                        ptransform.level = dst.level;
 
                         // and finally, build and send the packets
                         const transfer = new Schema.Transfer(dst.level, dst.x, dst.y, entities);
@@ -171,9 +184,15 @@ export class Server {
             // it includes the player's entity ID + the state of other entities
             const player = { id: entity, level, position };
             const entities = new Array<Schema.Initial.Entity>();
-            this.world.view(NetPos).each((id, npos) => {
+            this.world.view(NetTransform).each((id, npos) => {
                 if (id === entity || npos.level !== player.level) return;
-                entities.push({ id, position: { x: npos.current[0], y: npos.current[1] } });
+                entities.push({
+                    id,
+                    position: {
+                        x: npos.current.position[0],
+                        y: npos.current.position[1]
+                    }
+                });
             });
             const identity = new Schema.Initial(player, entities);
             session.send(Message.build(Schema.Id.Initial, identity.write()));
@@ -199,7 +218,7 @@ export class Server {
         await this.smgr.start();
         Log.info(`SessionManager initialized`);
 
-        Log.info(`Starting main loop`);
+        Log.info(`Server initialized`);
         Runtime.start({
             update: this.tick,
             rate: 30,

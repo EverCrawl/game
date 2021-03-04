@@ -2,6 +2,7 @@
 import { Renderer, Texture, TextureKind } from "client/core/gfx";
 import { v2, v4, Vector2, Vector4 } from "common/math";
 import { Path } from "common/utils";
+import { LevelObject } from "common/map/object";
 
 export const enum CollisionKind {
     None = 0,
@@ -69,71 +70,6 @@ export class Tileset {
     }
 }
 
-interface BaseObject {
-    type?: string,
-    id: number,
-    x: number,
-    y: number,
-    props?: { [field: string]: any }
-}
-
-interface EllipseObject extends BaseObject {
-    base: "ellipse",
-    width: number,
-    height: number,
-}
-
-interface PointObject extends BaseObject {
-    base: "point",
-}
-
-interface PolygonObject extends BaseObject {
-    base: "polygon",
-    points: [number, number][],
-}
-
-interface PolylineObject extends BaseObject {
-    base: "polyline",
-    points: [number, number][],
-}
-
-interface TextObject extends BaseObject {
-    base: "text",
-    width: number,
-    height: number,
-    text: {
-        size: number,
-        wrap: boolean,
-        content: string
-    },
-}
-
-interface TileObject extends BaseObject {
-    base: "tile",
-    tileId: number,
-    width: number,
-    height: number,
-}
-
-interface RectangleObject extends BaseObject {
-    base: "rect",
-    width: number,
-    height: number,
-}
-
-interface PortalObject extends RectangleObject {
-    type: "portal"
-}
-
-type LevelObject =
-    | EllipseObject
-    | PointObject
-    | PolygonObject
-    | PolylineObject
-    | TextObject
-    | TileObject
-    | RectangleObject
-
 interface LevelData {
     width: number,
     height: number,
@@ -182,8 +118,7 @@ interface LoadedLevelData {
      * `tile = level.tiles[layer][tileX + tileY * level.width]`
      */
     tile: number[][],
-    object: { [name: string]: LevelObject },
-    portal: { [name: string]: PortalObject }
+    object: { [name: string]: LevelObject }
 }
 
 export class Level {
@@ -274,16 +209,6 @@ export class Level {
             // use loaded tilesets
             for (const [index, tileset] of results) {
                 (<Tileset[]>this.data.tilesets)[index] = tileset;
-            }
-
-            // move portals from object into portal field
-            this.data.portal = {};
-            for (const name of Object.keys(this.data.object)) {
-                const obj = this.data.object[name];
-                if (obj.type === "portal") {
-                    delete ((<any>this.data.object)[name]);
-                    this.data.portal[name] = (obj as PortalObject);
-                }
             }
 
             // background RGBA hex -> RGBA Vector4

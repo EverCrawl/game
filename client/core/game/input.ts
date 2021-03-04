@@ -1,3 +1,6 @@
+import { RigidBody } from "common/component";
+import { v2, Vector2 } from "common/math";
+import { Game } from "./game";
 
 let keys: { [name: string]: boolean } = {};
 window.addEventListener("keydown", e => keys[e.code] = true);
@@ -62,9 +65,32 @@ window.addEventListener("mousemove", e => (
 // TODO: wheel event
 
 export const mouse = {
-    current: current,
+    /**
+     * Current mouse position
+     */
+    current,
+    /**
+     * Returns true if `button` is held down
+     */
     isPressed: (button: number) => buttons[button] ?? false,
-    moved: () => (previous.x !== current.x || previous.y !== current.y)
+    /**
+     * Returns true if the mouse has moved during the previous frame
+     */
+    moved: () => (previous.x !== current.x || previous.y !== current.y),
+    /**
+     * Returns the mouse world position
+     */
+    world: (game: Game) => {
+        const worldOffset = v2.clone(
+            game.world.get(game.player, RigidBody)!
+                .position.current);
+
+        // TODO: more may be needed if zoom is ever properly implemented.
+        return {
+            x: current.x + worldOffset[0],
+            y: current.y + worldOffset[1]
+        }
+    }
 } as const;
 export type mouse = typeof mouse;
 

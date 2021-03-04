@@ -13,19 +13,34 @@ export const enum CollisionState {
 
 const STARTING_LEVEL = "test";
 
-export class NetPos extends Interpolated<Vector2> {
-    level: string = STARTING_LEVEL;
-    cstate: CollisionState = CollisionState.Ground;
-    constructor(initial: Vector2 = v2()) {
-        super(initial, v2.lerp);
+export class Transform {
+    constructor(
+        public position: Vector2,
+        public rotation: number,
+        public scale: Vector2
+    ) { }
+
+    static lerp(a: Transform, b: Transform, weight: number): Transform {
+        const interpolatedPosition = v2.lerp(a.position, b.position, weight);
+        const interpolatedRotation = Math.lerp(a.rotation, b.rotation, weight);
+        const interpolatedScale = v2.lerp(a.scale, b.scale, weight);
+        return new Transform(interpolatedPosition, interpolatedRotation, interpolatedScale);
+    }
+
+    static clone(it: Transform): Transform {
+        return new Transform(v2.clone(it.position), it.rotation, v2.clone(it.scale));
     }
 }
-
-export class Position {
-    constructor(public value: Vector2 = v2()) { }
+export class NetTransform extends Interpolated<Transform> {
+    level: string = STARTING_LEVEL;
+    cstate: CollisionState = CollisionState.Ground;
+    constructor(position = v2(), rotation = 0, scale = v2()) {
+        super(new Transform(position, rotation, scale), Transform.lerp);
+    }
 }
+export class Velocity extends Value<Vector2> { }
 
-/* export class Velocity extends Value<Vector2> { }
+/*
 export class Speed extends Value<number> { }
 export class Collider extends Value<AABB> {
     clone() {

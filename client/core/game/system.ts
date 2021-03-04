@@ -1,12 +1,43 @@
-import { World, Entity, Null } from "uecs";
-import { CollisionState, NetPos, RigidBody } from 'common/component';
+import { Null } from "uecs";
+import { CollisionState, NetTransform, RigidBody, Transform, Velocity } from 'common/component';
 import { Sprite, Direction } from "client/core/gfx";
-import { CollisionKind, Level, TILESIZE, TILESIZE_HALF, TILE_SCALE } from "client/core/map";
+import { CollisionKind, TILESIZE, TILESIZE_HALF, TILE_SCALE } from "client/core/map";
 import { AABB, v2, Vector2 } from 'common/math';
 import * as Input from "./input";
 import * as Net from "./net";
 import { Game } from "./game";
 import { Message, Schema } from "common/net";
+import { Bullet, Player } from "./entity";
+
+let lastShot = Date.now();
+const SHOT_CD = 150 /*ms*/;
+const BULLET_TTL = 1000 /*ms*/;
+export function shoot(game: Game) {
+    if (game.player === Null || !game.level || !game.level.ready) return;
+    const playerPos = game.world.get(game.player, RigidBody)!.position;
+
+    const now = Date.now();
+    if (Input.mouse.isPressed(Input.Button.Left) && (now - lastShot) > SHOT_CD) {
+        console.log("shoot!");
+        lastShot = now;
+
+        const dir = v2(Input.mouse.current.x - (game.canvas.width / 2), Input.mouse.current.y - (game.canvas.height / 2));
+
+        Bullet.shoot(game.world, 0, v2(playerPos.current[0], playerPos.current[1] + 8), dir, BULLET_TTL);
+    }
+
+    // update bullet position
+    game.world.view(NetTransform, Velocity, Bullet.TAG).each((_, transform, velocity) => {
+        transform.update(new Transform(
+            v2(
+                transform.current.position[0] + velocity.value[0],
+                transform.current.position[1] + velocity.value[1]
+            ),
+            transform.current.rotation,
+            transform.current.scale
+        ))
+    });
+}
 
 let lastUse = Date.now();
 const USE_CD = 250 /*ms*/;
@@ -20,19 +51,25 @@ export function use(game: Game) {
 
     // TODO: generalize this to 'use' any object
     // TODO: store object name in object (because Object.values is faster)
-    for (const key of Object.keys(game.level.data.portal)) {
-        const portal = game.level.data.portal[key];
-        portalAABB.half = v2(portal.width / 2, portal.height / 2);
-        portalAABB.center = v2(portal.x + portalAABB.half[0], portal.y + portalAABB.half[1]);
+    for (const key of Object.keys(game.level.data.object)) {
+        const object = game.level.data.object[key];
+        switch (object.type) {
+            case "portal": {
+                const portal = object;
+                portalAABB.half = v2(portal.width / 2, portal.height / 2);
+                portalAABB.center = v2(portal.x + portalAABB.half[0], portal.y + portalAABB.half[1]);
 
-        const now = Date.now();
-        if ((now - lastUse >= USE_CD) && Input.key.isPressed("KeyF") && playerAABB.static(portalAABB)) {
-            console.log(`use portal '${key}'`);
+                const now = Date.now();
+                if ((now - lastUse >= USE_CD) && Input.key.isPressed("KeyF") && playerAABB.static(portalAABB)) {
+                    console.log(`use portal '${key}'`);
 
-            const use = new Schema.Action.Use(key);
-            game.socket.send(Message.build(Schema.Action.Id.Use, use.write()));
+                    const use = new Schema.Action.Use(key);
+                    game.socket.send(Message.build(Schema.Action.Id.Use, use.write()));
 
-            lastUse = now;
+                    lastUse = now;
+                }
+                break;
+            }
         }
     }
 }
@@ -40,7 +77,7 @@ export function use(game: Game) {
 export function network(game: Game) {
     const socket = game.socket;
     if (socket.state === Net.Socket.OPEN) {
-        game.world.view(NetPos).each((_, p) => p.update(v2.clone(p.current)));
+        game.world.view(NetTransform).each((_, p) => p.update(Transform.clone(p.current)));
 
         if (!socket.empty) {
             let packet;
@@ -523,7 +560,7 @@ export function physics(game: Game) {
     body.position.update(entityBox.center);
 }
 
-function animate(sprite: Sprite, dpos: Vector2, cstate: CollisionState) {
+function animateHumanoid(sprite: Sprite, dpos: Vector2, cstate: CollisionState) {
     let direction = sprite.direction;
     if (dpos[0] < 0)
         direction = Direction.Left,
@@ -556,18 +593,18 @@ function animate(sprite: Sprite, dpos: Vector2, cstate: CollisionState) {
 export function animation(game: Game) {
     if (!game.ready()) return;
     const world = game.world, player = game.player;
-    // animate entities
-    world.view(Sprite, NetPos).each((_, sprite, pos) => {
-        const p0 = pos.previous;
-        const p1 = pos.current;
+    // animate humanoids
+    world.view(Sprite, NetTransform, Player.TAG).each((_, sprite, pos) => {
+        const p0 = pos.previous.position;
+        const p1 = pos.current.position;
         const dpos = v2(p1[0] - p0[0], p1[1] - p0[1]);
-        animate(sprite, dpos, pos.cstate);
+        animateHumanoid(sprite, dpos, pos.cstate);
     });
 
     // animate player
     if (player !== Null) {
         const sprite = world.get(player, Sprite)!;
         const body = world.get(player, RigidBody)!;
-        animate(sprite, body.velocity, body.cstate);
+        animateHumanoid(sprite, body.velocity, body.cstate);
     }
 }
