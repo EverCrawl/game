@@ -12,7 +12,8 @@
         "start:server": "node dist/server/index.js",
         "test": "jest",
         "build": "yarn build:server",
-        "start": "yarn start:server"
+        "start": "yarn start:server",
+        "install": "yarn install --network-concurrency 1"
     },
     "devDependencies": {
         "@snowpack/plugin-dotenv": "^2.0.5",
