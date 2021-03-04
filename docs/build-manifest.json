@@ -677,7 +677,7 @@
       "imports": []
     },
     "dist/core/game/game.js": {
-      "bytes": 2363,
+      "bytes": 2434,
       "imports": [
         {
           "path": "_snowpack/pkg/uecs.js",
@@ -951,7 +951,7 @@
           "bytesInOutput": 328
         },
         "dist/core/game/game.js": {
-          "bytesInOutput": 1032
+          "bytesInOutput": 1086
         },
         "dist/app/app.js": {
           "bytesInOutput": 500
@@ -960,7 +960,7 @@
           "bytesInOutput": 29
         }
       },
-      "bytes": 70821
+      "bytes": 70875
     },
     "../~~bundle~~/dist/index.css": {
       "imports": [],

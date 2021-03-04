@@ -75,7 +75,8 @@ export class Game {
         this.camera = new Camera(new Viewport(), { zoom: 4 });
         this.renderer = new Renderer();
         this.world = new World();
-        this.socket = new Net.Socket("127.0.0.1:8888", "test", 1000);
+        const url = DEBUG ? "localhost:8888" : "protected-springs-02493.herokuapp.com";
+        this.socket = new Net.Socket(url, "test", 1000);
         this.player = Null;
 
         if (DEBUG) {
