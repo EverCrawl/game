@@ -13,11 +13,7 @@ The game is available live at http://game.jan-prochazka.eu/.
 * S: Drop from platform
 * F: Use portal
 
-<<<<<<< HEAD
 The game heavily utilizes the ECS paradigm (through the use of [μECS](https://github.com/jprochazk/uecs)) and currently consists only of basic rendering, networking and physics.
-=======
-The game heavily utilizes the ECS paradigm (through the use of [μECS](https://github.com/jprochazk/uecs)) and currently consists only of rendering, networking and physics.
->>>>>>> 90bd9dd2423279c521743daa27555cc06af08d6c
 
 * Networking
   * WebSockets are the underlying transport protocol
