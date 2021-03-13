@@ -7,12 +7,16 @@ function connect(address: string, options: {
     onclose?: (event: CloseEvent) => void,
     onerror?: (event: Event) => void,
     onmessage?: (event: MessageEvent<any>) => void,
+    ontimeout?: () => void,
 } = {}): WebSocket {
     const ws = new WebSocket(`ws://${address}/`, options.credentials);
     let connected = false;
     if (options.timeout) {
         setTimeout(() => {
             if (!connected) {
+                if (options.ontimeout) {
+                    options.ontimeout();
+                }
                 ws.close(1000, "Timed out");
             }
         }, options.timeout);
@@ -56,7 +60,7 @@ export class Socket {
     public static readonly CLOSED = 3;
 
     private packets_: ArrayBuffer[];
-    private ws_: WebSocket;
+    private ws_?: WebSocket;
 
     /**
      * @param address 
@@ -66,35 +70,37 @@ export class Socket {
     constructor(
         public readonly address: string,
         private credentials?: string,
-        timeout?: number,
     ) {
         this.packets_ = [];
-        this.ws_ = connect(address, {
-            timeout,
-            credentials: this.credentials,
-            onopen: this._onopen,
-            onclose: this._onclose,
-            onerror: this._onerror,
-            onmessage: this._onmessage,
-        });
     }
 
     get state(): number {
-        return this.ws_.readyState;
+        return this.ws_?.readyState ?? Socket.CLOSED;
     }
 
     get empty(): boolean {
         return this.packets_.empty();
     }
 
+    open(timeout?: number, ontimeout?: () => void): void {
+        this.ws_ = connect(this.address, {
+            timeout,
+            credentials: this.credentials,
+            onopen: this._onopen,
+            onclose: this._onclose,
+            onerror: this._onerror,
+            onmessage: this._onmessage,
+            ontimeout,
+        });
+    }
     close(): void {
         if (this.state !== Socket.CONNECTING && this.state !== Socket.OPEN) return;
-        this.ws_.close();
+        this.ws_!.close();
     }
 
     send(data: ArrayBuffer): void {
         if (this.state !== Socket.OPEN) return;
-        this.ws_.send(data);
+        this.ws_!.send(data);
     }
 
     read(): ArrayBuffer | undefined {
@@ -115,7 +121,6 @@ export class Socket {
     /**
      * Disconnection handler
      * This will be called when the socket fully closes a connection.
-     * This also implies that there will be no more reconnection, unless `Socket.reconnect()` is called.
      */
     onclose?: ((event: CloseEvent) => void);
     /**

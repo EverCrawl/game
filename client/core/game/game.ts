@@ -75,8 +75,12 @@ export class Game {
         this.camera = new Camera(new Viewport(), { zoom: 4 });
         this.renderer = new Renderer();
         this.world = new World();
+
         const url = DEBUG ? "localhost:8888" : "protected-springs-02493.herokuapp.com";
-        this.socket = new Net.Socket(url, "test", 1000);
+        this.socket = new Net.Socket("protected-springs-02493.herokuapp.com", "test");
+        this.socket.open(1000, () => (console.log("timeout"), this.overlay.error = "Connection failed."));
+        this.socket.onclose = _ => (this.overlay.error = "Connection dropped.");
+
         this.player = Null;
 
         if (DEBUG) {
@@ -118,7 +122,9 @@ export class Game {
     ) {
         if (this.player === Null || !this.level || !this.level.ready) {
             // render loading screen
+            if (!this.overlay.loading) this.overlay.loading = true;
         } else {
+            if (this.overlay.loading) this.overlay.loading = false;
             renderer.camera = camera;
             // world offset is the opposite of the player's position
             // e.g. if we're moving right (+x), the world should move left (-x)
