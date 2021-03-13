@@ -108,7 +108,7 @@ export class Game {
         this.overlay.loading = true;
         while (true) {
             try {
-                await this.socket.open(5000);
+                await this.socket.open(2500);
 
                 Runtime.start({
                     update: this.update,
