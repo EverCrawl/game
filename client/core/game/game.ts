@@ -64,7 +64,6 @@ export class Game {
         canvas: HTMLCanvasElement,
         overlay: OverlayContainer
     ) {
-        this.overlay = overlay;
         this.canvas = canvas;
         InitGL(this.canvas, {
             alpha: false,
@@ -72,16 +71,23 @@ export class Game {
             stencil: false,
             premultipliedAlpha: true,
         });
+
+        this.overlay = overlay;
+
         this.camera = new Camera(new Viewport(), { zoom: 4 });
         this.renderer = new Renderer();
+        this.renderer.camera = this.camera;
+
         this.world = new World();
-
-        const url = DEBUG ? "localhost:8888" : "protected-springs-02493.herokuapp.com";
-        this.socket = new Net.Socket("protected-springs-02493.herokuapp.com", "test");
-        this.socket.open(1000, () => (console.log("timeout"), this.overlay.error = "Connection failed."));
-        this.socket.onclose = _ => (this.overlay.error = "Connection dropped.");
-
         this.player = Null;
+
+        const url = /* DEBUG ? "localhost:8888" :  */"protected-springs-02493.herokuapp.com";
+        this.socket = new Net.Socket(url, "test");
+        const onClose = () => {
+            this.overlay.error = "Connection dropped.";
+        };
+        this.socket.onerror = onClose;
+        this.socket.onclose = onClose;
 
         if (DEBUG) {
             // @ts-ignore |SAFETY| available globally for debugging purposes in devtools console
@@ -98,15 +104,28 @@ export class Game {
         );
     }
 
-    run() {
-        Runtime.start({
-            update: () => this.update(),
-            render: (frameTime) => this.draw(this.renderer, this.camera, frameTime),
-            rate: 30
-        });
+    async run() {
+        this.overlay.loading = true;
+        while (true) {
+            try {
+                await this.socket.open(5000);
+
+                Runtime.start({
+                    update: this.update,
+                    render: this.render,
+                    rate: 30
+                });
+
+                break;
+            } catch (_) {
+                this.overlay.tooltip = "The server is starting, please wait a moment.";
+            }
+        }
+        this.overlay.loading = false;
+        this.overlay.tooltip = "";
     }
 
-    update() {
+    update = () => {
         Input.update();
         /* System.shoot(this); */
         System.use(this);
@@ -115,49 +134,45 @@ export class Game {
         System.animation(this);
     }
 
-    draw(
-        renderer: Renderer,
-        camera: Camera,
-        frameTime: number
-    ) {
-        if (this.player === Null || !this.level || !this.level.ready) {
+    render = (frameTime: number) => {
+        if (!this.ready()) {
             // render loading screen
             if (!this.overlay.loading) this.overlay.loading = true;
-        } else {
-            if (this.overlay.loading) this.overlay.loading = false;
-            renderer.camera = camera;
-            // world offset is the opposite of the player's position
-            // e.g. if we're moving right (+x), the world should move left (-x)
-            // to create the illusion of the player moving
-            const worldOffset = v2.negate(
-                this.world.get(this.player, RigidBody)!
-                    .position.get(frameTime));
-
-            this.level.render(renderer, worldOffset);
-
-            // during rendering, order in the same layer is maintained
-            // so the player is drawn last, to ensure it's drawn on top
-            // of every other entity
-            this.world.view(Sprite, NetTransform).each((entity, sprite, transform) => {
-                if (entity === this.player) return;
-
-                const lt = transform.get(frameTime);
-                if (this.world.has(entity, Player.TAG)) {
-                    sprite.draw(renderer, 0, v2(
-                        worldOffset[0] + lt.position[0],
-                        worldOffset[1] + lt.position[1] + 8
-                    ), 0, v2(0.5, 0.5));
-                } else {
-                    sprite.draw(renderer, 0, v2(
-                        worldOffset[0] + lt.position[0],
-                        worldOffset[1] + lt.position[1]
-                    ), lt.rotation, lt.scale);
-                }
-            });
-            this.world.get(this.player, Sprite)!
-                .draw(renderer, 0, v2(0, 8), 0, v2(0.5, 0.5));
-
-            renderer.flush();
+            return;
         }
+
+        if (this.overlay.loading) this.overlay.loading = false;
+        // world offset is the opposite of the player's position
+        // e.g. if we're moving right (+x), the world should move left (-x)
+        // to create the illusion of the player moving
+        const worldOffset = v2.negate(
+            this.world.get(this.player, RigidBody)!
+                .position.get(frameTime));
+
+        this.level.render(this.renderer, worldOffset);
+
+        // during rendering, order in the same layer is maintained
+        // so the player is drawn last, to ensure it's drawn on top
+        // of every other entity
+        this.world.view(Sprite, NetTransform).each((entity, sprite, transform) => {
+            if (entity === this.player) return;
+
+            const lt = transform.get(frameTime);
+            if (this.world.has(entity, Player.TAG)) {
+                sprite.draw(this.renderer, 0, v2(
+                    worldOffset[0] + lt.position[0],
+                    worldOffset[1] + lt.position[1] + 8
+                ), 0, v2(0.5, 0.5));
+            } else {
+                sprite.draw(this.renderer, 0, v2(
+                    worldOffset[0] + lt.position[0],
+                    worldOffset[1] + lt.position[1]
+                ), lt.rotation, lt.scale);
+            }
+        });
+        this.world.get(this.player, Sprite)!
+            .draw(this.renderer, 0, v2(0, 8), 0, v2(0.5, 0.5));
+
+        this.renderer.flush();
     }
 }

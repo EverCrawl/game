@@ -1,36 +1,34 @@
 export * from "./handle";
 
-function connect(address: string, options: {
+async function connect(address: string, options: {
     timeout?: number,
     credentials?: string,
-    onopen?: (event: Event) => void,
-    onclose?: (event: CloseEvent) => void,
-    onerror?: (event: Event) => void,
-    onmessage?: (event: MessageEvent<any>) => void,
-    ontimeout?: () => void,
-} = {}): WebSocket {
-    const ws = new WebSocket(`ws://${address}/`, options.credentials);
-    let connected = false;
-    if (options.timeout) {
-        setTimeout(() => {
-            if (!connected) {
-                if (options.ontimeout) {
-                    options.ontimeout();
-                }
-                ws.close(1000, "Timed out");
-            }
-        }, options.timeout);
-    }
-    ws.binaryType = "arraybuffer";
-    ws.onopen = (e) => {
-        connected = true;
-        if (options.onopen) options.onopen(e);
-        else console.log(`Connected to ${address}`);
-    }
-    ws.onclose = options.onclose ?? (_ => console.log(`Disconnected from ${address}`));
-    ws.onerror = options.onerror ?? (event => console.error(event));
-    ws.onmessage = options.onmessage ?? (event => console.log(`Message from ${address}: ${event.data}`));
-    return ws;
+} = {}): Promise<WebSocket> {
+    return new Promise((resolve, reject) => {
+        const ws = new WebSocket(`ws://${address}/`, options.credentials);
+        ws.binaryType = "arraybuffer";
+        let opened = false;
+        ws.onopen = _ => {
+            opened = true;
+            ws.onclose = null;
+            ws.onerror = null;
+            resolve(ws);
+        }
+        ws.onclose = _ => {
+            if (!opened) ws.close();
+            reject("Closed");
+        }
+        ws.onerror = (err) => {
+            if (!opened) ws.close();
+            reject(err);
+        }
+        if (options.timeout) {
+            setTimeout(_ => {
+                if (!opened) ws.close();
+                reject("Timed out");
+            }, options.timeout);
+        }
+    });
 }
 
 export class Socket {
@@ -82,17 +80,13 @@ export class Socket {
         return this.packets_.empty();
     }
 
-    open(timeout?: number, ontimeout?: () => void): void {
-        this.ws_ = connect(this.address, {
-            timeout,
-            credentials: this.credentials,
-            onopen: this._onopen,
-            onclose: this._onclose,
-            onerror: this._onerror,
-            onmessage: this._onmessage,
-            ontimeout,
-        });
+    async open(timeout?: number) {
+        this.ws_ = await connect(this.address, { timeout, credentials: this.credentials });
+        this.ws_.onerror = this._onerror;
+        this.ws_.onmessage = this._onmessage;
+        this.ws_.onclose = this._onclose;
     }
+
     close(): void {
         if (this.state !== Socket.CONNECTING && this.state !== Socket.OPEN) return;
         this.ws_!.close();
@@ -136,10 +130,6 @@ export class Socket {
     private _onclose = (event: CloseEvent): void => {
         if (this.onclose) this.onclose(event);
         else console.log(`Disconnected from ${this.address}`);
-    }
-    private _onopen = (event: Event): void => {
-        if (this.onconnect) this.onconnect(event);
-        else console.log(`Connected to ${this.address}`);
     }
     private _onmessage = (event: MessageEvent<any>): void => {
         this.packets_.push(event.data);
