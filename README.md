@@ -2,6 +2,8 @@
 
 Monorepo for the game [client](./client), [server](./server), [schema definitions](./schemas) and [assets](./assets).
 
+The game is available live at http://game.jan-prochazka.eu/.
+
 **Controls**
 
 * A/D: Move left/right
@@ -11,7 +13,7 @@ Monorepo for the game [client](./client), [server](./server), [schema definition
 * S: Drop from platform
 * F: Use portal
 
-The game heavily utilizes the ECS paradigm (through the use of [μECS](https://github.com/jprochazk/uecs)). Currently, consists only of rendering, networking and physics.
+The game heavily utilizes the ECS paradigm (through the use of [μECS](https://github.com/jprochazk/uecs)) and currently consists only of basic rendering, networking and physics.
 
 * Networking
   * WebSockets are the underlying transport protocol
