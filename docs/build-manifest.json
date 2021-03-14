@@ -22,11 +22,11 @@
       "imports": []
     },
     "dist/app/overlay.css": {
-      "bytes": 2211,
+      "bytes": 2344,
       "imports": []
     },
     "dist/app/overlay.js": {
-      "bytes": 1287,
+      "bytes": 1675,
       "imports": [
         {
           "path": "_snowpack/pkg/preact.js",
@@ -623,7 +623,7 @@
       ]
     },
     "dist/core/game/net/index.js": {
-      "bytes": 2442,
+      "bytes": 2123,
       "imports": [
         {
           "path": "dist/core/game/net/handle.js",
@@ -677,7 +677,7 @@
       "imports": []
     },
     "dist/core/game/game.js": {
-      "bytes": 2784,
+      "bytes": 2988,
       "imports": [
         {
           "path": "_snowpack/pkg/uecs.js",
@@ -795,7 +795,7 @@
           "bytesInOutput": 0
         },
         "dist/app/overlay.js": {
-          "bytesInOutput": 668
+          "bytesInOutput": 833
         },
         "_snowpack/pkg/uecs.js": {
           "bytesInOutput": 3170
@@ -942,7 +942,7 @@
           "bytesInOutput": 1225
         },
         "dist/core/game/net/index.js": {
-          "bytesInOutput": 1401
+          "bytesInOutput": 1184
         },
         "dist/core/game/system.js": {
           "bytesInOutput": 6357
@@ -951,7 +951,7 @@
           "bytesInOutput": 328
         },
         "dist/core/game/game.js": {
-          "bytesInOutput": 1372
+          "bytesInOutput": 1484
         },
         "dist/app/app.js": {
           "bytesInOutput": 500
@@ -960,7 +960,7 @@
           "bytesInOutput": 29
         }
       },
-      "bytes": 71717
+      "bytes": 71777
     },
     "../~~bundle~~/dist/index.css": {
       "imports": [],
@@ -969,10 +969,10 @@
           "bytesInOutput": 430
         },
         "dist/app/overlay.css": {
-          "bytesInOutput": 1603
+          "bytesInOutput": 1701
         }
       },
-      "bytes": 2034
+      "bytes": 2132
     }
   }
 }
