@@ -117,7 +117,7 @@ export class Game {
             }
         }
         this.overlay.loading = false;
-        this.overlay.tooltip = "";
+        this.overlay.tooltip = null;
 
         const onClose = () => {
             this.overlay.error = "Connection dropped.";
