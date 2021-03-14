@@ -83,11 +83,6 @@ export class Game {
 
         const url = /* DEBUG ? "localhost:8888" :  */"protected-springs-02493.herokuapp.com";
         this.socket = new Net.Socket(url, "test");
-        const onClose = () => {
-            this.overlay.error = "Connection dropped.";
-        };
-        this.socket.onerror = onClose;
-        this.socket.onclose = onClose;
 
         if (DEBUG) {
             // @ts-ignore |SAFETY| available globally for debugging purposes in devtools console
@@ -123,6 +118,12 @@ export class Game {
         }
         this.overlay.loading = false;
         this.overlay.tooltip = "";
+
+        const onClose = () => {
+            this.overlay.error = "Connection dropped.";
+        };
+        this.socket.onerror = onClose;
+        this.socket.onclose = onClose;
     }
 
     update = () => {
