@@ -3,6 +3,7 @@ import { Buffer, Camera, Shader, Texture, VertexArray } from "./";
 import { DynamicBuffer } from "./buffer";
 import * as Shaders from "./glsl";
 import * as Meshes from "./mesh";
+import { Text } from "./text";
 
 // TODO(speed): optimize rendering - it's about 94% of the frame time right now
 
@@ -27,12 +28,18 @@ interface TileRenderCommand {
     model: Matrix3;
 }
 
+interface TextRenderCommand {
+    texture: Texture;
+    model: Matrix3;
+}
+
 export class Renderer {
     private shaders: {
         tile: Shader;
         sprite: Shader;
         line: Shader;
         point: Shader;
+        text: Shader;
     }
     private vao: {
         quad: VertexArray;
@@ -46,6 +53,7 @@ export class Renderer {
         sprite: {
             [layer: number]: SpriteRenderCommand[];
         }
+        text: TextRenderCommand[];
     }
     private buffers: {
         point: {
@@ -85,10 +93,12 @@ export class Renderer {
             sprite: Shaders.Sprite.compile(),
             line: Shaders.Line.compile(),
             point: Shaders.Point.compile(),
+            text: Shaders.Text.compile()
         };
         this.commands = {
             tile: [],
-            sprite: []
+            sprite: [],
+            text: []
         };
         this.buffers = {
             point: {
@@ -126,9 +136,6 @@ export class Renderer {
             tile: number,
             position: Vector2 = [0, 0], rotation: number = 0, scale: Vector2 = [1, 1]
         ) => {
-            if (DEBUG && this.camera == null) {
-                throw new Error(`Renderer has no bound camera`);
-            }
             const model = m3();
             m3.translate(model, position);
             m3.rotate(model, rotation);
@@ -148,9 +155,6 @@ export class Renderer {
             uvMin: Vector2 = [0, 0], uvMax: Vector2 = [1, 1],
             position: Vector2 = [0, 0], rotation: number = 0, scale: Vector2 = [1, 1]
         ) => {
-            if (DEBUG && this.camera == null) {
-                throw new Error(`Renderer has no bound camera`);
-            }
             const model = m3();
             m3.translate(model, position);
             m3.rotate(model, rotation);
@@ -171,9 +175,6 @@ export class Renderer {
             p1: Vector2,
             color: Vector4 = [0.5, 0.5, 0.5, 1.0],
         ) => {
-            if (DEBUG && this.camera == null) {
-                throw new Error(`Renderer has no bound camera`);
-            }
             this.buffers.line.cpu.push(
                 ...p0, ...color,
                 ...p1, ...color
@@ -183,10 +184,21 @@ export class Renderer {
             position: Vector2,
             color: Vector3 = [0.5, 0.5, 0.5],
         ) => {
-            if (DEBUG && this.camera == null) {
-                throw new Error(`Renderer has no bound camera`);
-            }
             this.buffers.point.cpu.push(...position, ...color);
+        },
+        text: (
+            text: Text,
+            position: Vector2 = [0, 0], rotation: number = 0, scale: Vector2 = [1, 1]
+        ) => {
+            const model = m3();
+            m3.translate(model, position);
+            m3.rotate(model, rotation);
+            m3.scale(model, scale);
+
+            this.commands.text.push({
+                texture: text.texture,
+                model
+            })
         }
     }
 
@@ -197,14 +209,11 @@ export class Renderer {
 
         GL.clearColor(...this.background);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-
-        // setup common state
         GL.lineWidth(this.options.lineWidth ?? 2);
         GL.enable(GL.BLEND);
         GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
 
         { // tiles
-            // setup state
             const shader = this.shaders.tile;
             shader.bind();
             shader.uniforms.uVIEW.set(this.camera!.view);
@@ -213,8 +222,6 @@ export class Renderer {
             shader.uniforms.uATLAS.set(0);
             this.vao.quad.bind();
             const commands = this.commands.tile;
-
-            // draw
             const layers = Object.keys(commands).sort((a, b) => +a - +b);
             for (let i = 0, len = layers.length; i < len; ++i) {
                 const cmdList = commands[+layers[i]];
@@ -227,7 +234,6 @@ export class Renderer {
             }
         }
         { // sprites
-            // setup state
             const shader = this.shaders.sprite;
             shader.bind();
             shader.uniforms.uVIEW.set(this.camera!.view);
@@ -236,8 +242,6 @@ export class Renderer {
             shader.uniforms.uTEXTURE.set(0);
             this.vao.quad.bind();
             const commands = this.commands.sprite;
-
-            // draw
             const layers = Object.keys(commands).sort((a, b) => +a - +b);
             for (let i = 0, len = layers.length; i < len; ++i) {
                 const cmdList = commands[+layers[i]];
@@ -249,25 +253,31 @@ export class Renderer {
                 }
             }
         }
+        { // text
+            this.shaders.text.bind();
+            this.shaders.text.uniforms.uVIEW.set(this.camera!.view);
+            this.shaders.text.uniforms.uPROJECTION.set(this.camera!.projection);
+            this.vao.quad.bind();
+            const commands = this.commands.text;
+            for (let i = 0; i < commands.length; ++i) {
+                commands[i].texture.bind(0);
+                this.shaders.text.uniforms.uMODEL.set(commands[i].model);
+                GL.drawElements(GL.TRIANGLES, 6, GL.UNSIGNED_INT, 0);
+            }
+        }
         { // lines
-            // setup state
             this.shaders.line.bind();
             this.shaders.line.uniforms.uVIEW.set(this.camera!.view);
             this.shaders.line.uniforms.uPROJECTION.set(this.camera!.projection);
             this.vao.line.bind();
-
-            // draw
             this.buffers.line.gpu.upload(new Float32Array(this.buffers.line.cpu), 0);
             GL.drawArrays(GL.LINES, 0, this.buffers.line.cpu.length / 6);
         }
         { // points
-            // setup state
             this.shaders.point.bind();
             this.shaders.point.uniforms.uVIEW.set(this.camera!.view);
             this.shaders.point.uniforms.uPROJECTION.set(this.camera!.projection);
             this.vao.point.bind();
-
-            // draw
             this.buffers.point.gpu.upload(new Float32Array(this.buffers.point.cpu), 0);
             GL.drawArrays(GL.POINTS, 0, this.buffers.point.cpu.length / 5);
         }
@@ -275,6 +285,7 @@ export class Renderer {
         // clear queues
         this.commands.tile = [];
         this.commands.sprite = [];
+        this.commands.text = [];
         this.buffers.line.cpu = [];
         this.buffers.point.cpu = [];
     }

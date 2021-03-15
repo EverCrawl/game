@@ -34,8 +34,24 @@ export interface TextObject extends BaseObject {
     width: number,
     height: number,
     text: {
+        font: string,
         size: number,
-        wrap: boolean,
+        /**
+         * contains:
+         * * "b" if bold
+         * * "i" if italic
+         * * "u" if underline
+         * * "s" if strikeout
+         * 
+         * e.g. "biu" is "bold, italic, underline"
+         */
+        decoration: string,
+        /**
+         * #RRGGBB or #RRGGBBAA
+         */
+        color: string
+        align: "left" | "center" | "right",
+        baseline: "top" | "middle" | "bottom",
         content: string
     },
 }

@@ -26,7 +26,7 @@
       "imports": []
     },
     "dist/app/overlay.js": {
-      "bytes": 1675,
+      "bytes": 1646,
       "imports": [
         {
           "path": "_snowpack/pkg/preact.js",
@@ -192,8 +192,17 @@
         }
       ]
     },
+    "dist/core/gfx/glsl/text.js": {
+      "bytes": 663,
+      "imports": [
+        {
+          "path": "dist/core/gfx/shader.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
     "dist/core/gfx/glsl/index.js": {
-      "bytes": 283,
+      "bytes": 181,
       "imports": [
         {
           "path": "dist/core/gfx/glsl/sprite.js",
@@ -209,6 +218,10 @@
         },
         {
           "path": "dist/core/gfx/glsl/point.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/glsl/text.js",
           "kind": "import-statement"
         }
       ]
@@ -249,7 +262,7 @@
       ]
     },
     "dist/core/gfx/renderer.js": {
-      "bytes": 6034,
+      "bytes": 6449,
       "imports": [
         {
           "path": "dist/math/index.js",
@@ -270,7 +283,7 @@
       ]
     },
     "dist/core/gfx/texture.js": {
-      "bytes": 5308,
+      "bytes": 5410,
       "imports": [
         {
           "path": "dist/core/gfx/common.js",
@@ -419,8 +432,17 @@
         }
       ]
     },
+    "dist/core/gfx/text.js": {
+      "bytes": 921,
+      "imports": [
+        {
+          "path": "dist/core/gfx/texture.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
     "dist/core/map/level.js": {
-      "bytes": 4538,
+      "bytes": 5096,
       "imports": [
         {
           "path": "dist/core/gfx/index.js",
@@ -432,6 +454,10 @@
         },
         {
           "path": "dist/utils/index.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "dist/core/gfx/text.js",
           "kind": "import-statement"
         }
       ]
@@ -677,7 +703,7 @@
       "imports": []
     },
     "dist/core/game/game.js": {
-      "bytes": 2988,
+      "bytes": 3015,
       "imports": [
         {
           "path": "_snowpack/pkg/uecs.js",
@@ -795,10 +821,10 @@
           "bytesInOutput": 0
         },
         "dist/app/overlay.js": {
-          "bytesInOutput": 833
+          "bytesInOutput": 809
         },
         "_snowpack/pkg/uecs.js": {
-          "bytesInOutput": 3170
+          "bytesInOutput": 3171
         },
         "dist/core/gfx/error.js": {
           "bytesInOutput": 1983
@@ -845,6 +871,9 @@
         "dist/core/gfx/shader.js": {
           "bytesInOutput": 4806
         },
+        "dist/core/gfx/glsl/index.js": {
+          "bytesInOutput": 0
+        },
         "dist/core/gfx/glsl/tile.js": {
           "bytesInOutput": 817
         },
@@ -854,6 +883,9 @@
         "dist/core/gfx/glsl/point.js": {
           "bytesInOutput": 784
         },
+        "dist/core/gfx/glsl/text.js": {
+          "bytesInOutput": 620
+        },
         "dist/core/gfx/mesh/quad.js": {
           "bytesInOutput": 423
         },
@@ -861,13 +893,13 @@
           "bytesInOutput": 934
         },
         "dist/core/gfx/renderer.js": {
-          "bytesInOutput": 3648
+          "bytesInOutput": 3873
         },
         "dist/core/gfx/texture.js": {
-          "bytesInOutput": 2932
+          "bytesInOutput": 3016
         },
         "dist/core/gfx/sprite.js": {
-          "bytesInOutput": 2859
+          "bytesInOutput": 2858
         },
         "dist/core/gfx/viewport.js": {
           "bytesInOutput": 393
@@ -893,8 +925,11 @@
         "dist/utils/string.js": {
           "bytesInOutput": 1005
         },
+        "dist/core/gfx/text.js": {
+          "bytesInOutput": 501
+        },
         "dist/core/map/level.js": {
-          "bytesInOutput": 2230
+          "bytesInOutput": 2550
         },
         "dist/core/map/index.js": {
           "bytesInOutput": 0
@@ -945,13 +980,13 @@
           "bytesInOutput": 1184
         },
         "dist/core/game/system.js": {
-          "bytesInOutput": 6357
+          "bytesInOutput": 6360
         },
         "dist/runtime.js": {
           "bytesInOutput": 328
         },
         "dist/core/game/game.js": {
-          "bytesInOutput": 1484
+          "bytesInOutput": 1509
         },
         "dist/app/app.js": {
           "bytesInOutput": 500
@@ -960,7 +995,7 @@
           "bytesInOutput": 29
         }
       },
-      "bytes": 71777
+      "bytes": 73531
     },
     "../~~bundle~~/dist/index.css": {
       "imports": [],

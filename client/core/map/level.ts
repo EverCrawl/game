@@ -2,7 +2,8 @@
 import { Renderer, Texture, TextureKind } from "client/core/gfx";
 import { v2, v4, Vector2, Vector4 } from "common/math";
 import { Path } from "common/utils";
-import { LevelObject } from "common/map/object";
+import { LevelObject, TextObject } from "common/map/object";
+import { Text } from "../gfx/text";
 
 export const enum CollisionKind {
     None = 0,
@@ -118,7 +119,8 @@ interface LoadedLevelData {
      * `tile = level.tiles[layer][tileX + tileY * level.width]`
      */
     tile: number[][],
-    object: { [name: string]: LevelObject }
+    object: { [name: string]: LevelObject },
+    text: Text[]
 }
 
 export class Level {
@@ -151,10 +153,10 @@ export class Level {
         renderer.background = this.data.background;
         // render level tile layers
         let renderLayerId = -10;
-        for (let layerIndex = 0; layerIndex < this.data.tile.length; ++layerIndex) {
+        for (let idx = 0; idx < this.data.tile.length; ++idx) {
             for (let y = 0; y < this.data.height; ++y) {
                 for (let x = 0; x < this.data.width; ++x) {
-                    let tile = this.data.tile[layerIndex][x + y * this.data.width];
+                    let tile = this.data.tile[idx][x + y * this.data.width];
                     if (tile === 0) continue;
                     // have to remove '1' to get the actual ID
                     // because all IDs are offset by '1' due to '0' having a special value
@@ -179,6 +181,17 @@ export class Level {
                         tilePos, 0, TILE_SCALE);
                 }
             }
+        }
+
+        // render text
+        for (let i = 0; i < this.data.text.length; ++i) {
+            const obj = this.data.text[i];
+            const pos = v2(
+                worldOffset[0] + obj.data.x + obj.data.width / 2,
+                worldOffset[1] + obj.data.y + obj.data.height / 2
+            );
+            renderer.command.text(
+                obj, pos, 0, [obj.data.width / 2, obj.data.height / 2]);
         }
 
         // TODO: per-animation step
@@ -208,15 +221,24 @@ export class Level {
 
             // use loaded tilesets
             for (const [index, tileset] of results) {
-                (<Tileset[]>this.data.tilesets)[index] = tileset;
+                this.data.tilesets[index] = tileset;
+            }
+
+            // load text objects
+            this.data.text = [];
+            const objects = Object.values(this.data.object);
+            for (let i = 0; i < objects.length; ++i) {
+                if (objects[i].type === "text") {
+                    this.data.text.push(new Text(objects[i] as TextObject));
+                }
             }
 
             // background RGBA hex -> RGBA Vector4
-            (<Vector4>this.data.background) = v4.hex(data.background.substring(1));
-            (<{ x: number, y: number }>this.size) = { x: this.data.width * TILESIZE, y: this.data.height * TILESIZE };
+            this.data.background = v4.hex(data.background.substring(1));
+            this.size = { x: this.data.width * TILESIZE, y: this.data.height * TILESIZE };
 
             if (this.onload != null) this.onload();
-            (<boolean>this.ready) = true;
+            this.ready = true;
             console.log(`Finished loading level '${this.path}': `, this);
         });
     }

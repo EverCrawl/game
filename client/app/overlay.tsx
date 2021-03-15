@@ -27,7 +27,6 @@ export default class OverlayContainer extends Component<Props, State> {
             contents = <div class="error">{this.error}</div>;
             isSpinnerEnabled = false;
         }
-        console.log(this.state);
 
         return <div class="overlay" tabIndex={-1}>
             <div class="center-container">

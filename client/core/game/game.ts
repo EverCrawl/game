@@ -81,7 +81,7 @@ export class Game {
         this.world = new World();
         this.player = Null;
 
-        const url = /* DEBUG ? "localhost:8888" :  */"protected-springs-02493.herokuapp.com";
+        const url = DEBUG ? "localhost:8888" : "protected-springs-02493.herokuapp.com";
         this.socket = new Net.Socket(url, "test");
 
         if (DEBUG) {

@@ -12,6 +12,7 @@ export interface TextureBaseOptions {
 }
 export interface TextureImage2DOptions extends TextureBaseOptions {
     path: string;
+    premultiplyAlpha?: boolean;
 }
 export interface TextureAtlasOptions extends TextureBaseOptions {
     path: string;
@@ -36,7 +37,7 @@ export class Texture {
     public readonly handle: WebGLTexture;
     private target!: GLenum;
 
-    private constructor(
+    protected constructor(
         private image: HTMLImageElement,
         private kind: TextureKind,
         private options: any
@@ -128,7 +129,7 @@ function toImageElement(buffer: TextureBuffer, width: number, height: number) {
     return img;
 }
 
-function sampleImage(texture: WebGLTexture, image: HTMLImageElement, options: TextureBaseOptions) {
+function sampleImage(texture: WebGLTexture, image: HTMLImageElement, options: TextureImage2DOptions) {
     const target = GL.TEXTURE_2D;
     GL.bindTexture(target, texture);
     GL.texImage2D(target, 0,
@@ -136,6 +137,7 @@ function sampleImage(texture: WebGLTexture, image: HTMLImageElement, options: Te
         options.format ?? GL.RGBA,
         options.type ?? GL.UNSIGNED_BYTE,
         image);
+    if (options.premultiplyAlpha === true) GL.pixelStorei(GL.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
     GL.texParameteri(target, GL.TEXTURE_WRAP_S, options.wrap_s ?? GL.CLAMP_TO_EDGE);
     GL.texParameteri(target, GL.TEXTURE_WRAP_T, options.wrap_t ?? GL.CLAMP_TO_EDGE);
     GL.texParameteri(target, GL.TEXTURE_MIN_FILTER, options.filter_min ?? GL.NEAREST);
