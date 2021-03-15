@@ -24,8 +24,6 @@ export class LevelStorage {
             this.levels[name] = new Level(name, file);
         }
         Log.info(`Level storage initialized with ${Object.keys(this.levels).length} levels`);
-
-        Log.info(this.levels["test"].data.object["welcome_text"]);
     }
 
     destination(portal: PortalObject): Destination {
