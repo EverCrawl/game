@@ -50,13 +50,14 @@
   <object id="2" name="spawn" type="spawnpoint" x="422" y="105">
    <point/>
   </object>
-  <object id="3" name="welcome_text" x="396.189" y="43.5985" width="78.0606" height="60.0909">
+  <object id="3" name="welcome_text" x="390.689" y="31.0985" width="78.0606" height="60.0909">
    <text fontfamily="Arial" pixelsize="8" wrap="1">Welcome!
-A D - move left/right
-W S - climb ladders
-S - jump off platform
-X - let go of ladder 
-F - use portal</text>
+Space to jump
+A/D to move left/right
+W/S to climb ladders
+X to let go of ladders
+S to jump off platform
+F to use portals</text>
   </object>
   <object id="19" template="../templates/portal.tx" name="portal_test2" x="496" y="80">
    <properties>
